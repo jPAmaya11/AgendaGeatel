@@ -1,0 +1,541 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*==============
+COLORES
+==============*/
+
+:root {
+    --colorPrincipal: #5f5ffffc;
+    --colortTxt: #4d4a48;
+    --colorSecundario: #ff7e00;
+}
+.tituloPag,
+.colorMorado {
+    color: var(--colorPrincipal);
+}
+.bgPrincipal {
+    background: var(--colorPrincipal);
+}
+.bgSecundario {
+    background: #ebebeb;
+    color: #000;
+    padding: 5px 15px;
+    font-size: 15px;
+    border-radius: 10px;
+}
+.bgSecundario svg {
+    color: #000;
+}
+a,
+button {
+    transition: 200ms;
+}
+
+/*==============
+MENU
+==============*/
+
+.fixed.inset-y-0 {
+    transition: 300ms;
+}
+.customMenu * {
+    color: #fff;
+}
+.menuActivado {
+    background: var(--colorSecundario);
+}
+.menuActivado * {
+    color: #fff;
+}
+.menuAbierto .toolTip {
+    display: none !important;
+}
+.menuAbierto .linkCarteras,
+.menuAbierto .linkMenu {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+label.linkCarteras {
+    margin: 0;
+    padding-top: 20px;
+    padding-bottom: 10px;
+}
+.customMenu nav {
+    overflow: visible;
+}
+.svgMenu {
+    fill: #fff;
+    width: 40px;
+}
+.linkMenu:hover {
+    background: var(--colorSecundario);
+}
+
+.separador {
+    width: 100%;
+    height: 1px;
+    background: #fff;
+}
+.separadorAdmin {
+    margin: 0 !important;
+}
+.rollBar {
+    font-size: 11px;
+    display: block;
+    line-height: 1;
+    color: gray;
+    position: relative;
+    top: -4px;
+    text-transform: capitalize;
+}
+
+/* .h-90 {
+    overflow: hidden;
+    height: 71%;
+}
+.overflowHijo {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    max-height: 100%;
+    width: calc(100% + 17px);
+} */
+
+.overflowHijo {
+    overflow: scroll; /* o auto */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE 10+ */
+}
+
+.overflowHijo::-webkit-scrollbar {
+    display: none; /* Chrome, Safari y Edge */
+}
+
+/*==============
+LOGIN
+==============*/
+
+.boxBtnl {
+    margin-top: 35px;
+}
+
+/* LOGO */
+/* .geatelLogo {
+    width: auto;
+    max-width: 325px;
+} */
+.center {
+    text-align: center;
+}
+.geatelLogo {
+    width: auto;
+    max-width: 415px;
+    background: #fff;
+    background-color: #fff;
+    margin: 0;
+    padding: 2rem 2.5rem 1rem;
+    box-sizing: border-box;
+    border: solid 1px #ddd;
+    border-radius: 0.5em 0.5em 0 0;
+    border-bottom-width: 0;
+}
+
+.geatelLogo img {
+    width: 100%;
+}
+
+.tituloPrincipal {
+    font-weight: 600;
+    width: 100%;
+    text-align: center;
+    font-size: 28px;
+    color: var(--colortTxt);
+    line-height: 1.05;
+    margin: 18px 0 33px;
+}
+
+form label.block {
+    color: var(--colorPrincipal);
+}
+.mt-6.w-full.overflow-hidden {
+    width: 100%;
+    max-width: 415px;
+    background-color: #fff;
+    margin: 0;
+    padding: 0 2.5rem 2.5rem;
+    box-sizing: border-box;
+    border: solid 1px #ddd;
+    border-radius: 0 0 0.5em 0.5em;
+    border-top-width: 0;
+}
+
+button.btnFull {
+    width: 100%;
+}
+
+button.btn {
+    background: var(--colorPrincipal);
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    font-size: 20px;
+    padding: 19px;
+    letter-spacing: normal;
+    text-transform: none;
+    position: relative;
+}
+.modalInputs input,
+.modalInputs textarea,
+.modalInputs select,
+.inputs {
+    display: block;
+    margin: 0;
+    padding: 0 1em 0;
+    background-color: #f3fafddb !important;
+    border: solid 1px var(--colorPrincipal);
+    border-radius: 4px;
+    box-sizing: border-box;
+    width: 100%;
+    height: 60px;
+    font-size: 1.2em;
+    color: #353538;
+    font-weight: 600;
+    font-family: inherit;
+    transition: box-shadow 0.2s linear, border-color 0.25s ease-out;
+}
+.modalInputs textarea,
+.modalInputs select,
+.modalInputs input {
+    padding: 8px 15px 7px;
+    height: auto;
+    font-size: 15px;
+}
+svg.mySVG {
+    position: relative;
+    left: 0;
+    top: 0;
+    width: 45px;
+    height: 45px;
+    pointer-events: none;
+    border-radius: 100%;
+    margin: -10px 7px -10px 0;
+    border: 3px solid #ffffff1c;
+}
+
+ .m-0 {
+    margin-bottom: 0 !important;
+ }
+/*============
+PAGINAS
+============*/
+@keyframes fadeSlideLeft {
+    0% {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+@keyframes drawDashed {
+    0% {
+        width: 0;
+        opacity: 0;
+    }
+    100% {
+        width: 30px;
+        opacity: 1;
+    }
+}
+
+@keyframes drawSolid {
+    0% {
+        width: 0;
+        opacity: 0;
+    }
+    100% {
+        width: 60px;
+        opacity: 1;
+    }
+}
+
+.tituloPag {
+    position: relative;
+    font-weight: bold;
+    font-size: 25px;
+    top: -3px;
+    animation: fadeSlideLeft 0.5s ease-out forwards;
+    animation-delay: 0.1s;
+    opacity: 0;
+}
+
+.tituloPag::before,
+.tituloPag::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    opacity: 0;
+}
+
+.tituloPag::before {
+    height: 2px;
+    border: 2px dashed var(--colorPrincipal);
+    left: 0;
+    animation: drawDashed 0.5s ease-out forwards;
+    animation-delay: 0.6s;
+}
+
+.tituloPag::after {
+    height: 4px;
+    background: var(--colorPrincipal);
+    left: 35px;
+    border-radius: 2px;
+    animation: drawSolid 0.5s ease-out forwards;
+    animation-delay: 0.8s;
+}
+
+.rounded-full {
+    border-radius: 5px;
+}
+.rounded-fulls {
+    border-radius: 9999px;
+}
+
+.borderTable {
+    border-radius: 8px !important;
+    overflow: hidden;
+    border: none !important;
+}
+.borderTable th,
+.borderTable td {
+    border: 1px solid #ddd;
+}
+.bgHeadTable {
+    background: var(--colorPrincipal);
+    color: #fff;
+}
+
+.relleno .rellenoInternas {
+    background: #fff;
+    padding: 1.5rem 2rem;
+    border-radius: 6px;
+}
+
+/*===========
+CAMBIOS AL MULTISELECT
+===========*/
+
+/* Etiquetas seleccionadas */
+.multiselect__tag {
+    background-color: #6366f1 !important; /* Indigo-500 */
+    padding: 4px 20px 4px 8px !important;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+/* Ícono de cierre (X) */
+.multiselect__tag-icon::after {
+    content: "×";
+    color: #ffffff !important;
+    font-size: 14px;
+    font-weight: bold;
+}
+
+/* Contenedor de las opciones desplegables */
+.multiselect__content-wrapper {
+    max-height: 140px !important;
+    overflow-y: auto !important;
+    border-radius: 6px;
+    overscroll-behavior: contain;
+    border: 1px solid #e0e7ff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    background-color: #ffffff;
+}
+
+/* Input y zona de etiquetas */
+.multiselect__tags {
+    padding: 4px 8px !important;
+    gap: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    background-color: #f8fafc;
+    border-radius: 6px;
+    border: 1px solid #c7d2fe;
+}
+
+/* Opciones */
+.multiselect__element {
+    font-size: 14px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+.multiselect__option--highlight {
+    background-color: #eef2ff !important; /* Indigo-50 más suave */
+    color: #3730a3 !important; /* Indigo-700 */
+}
+
+/* Scrollbar tranquilo */
+.multiselect__content-wrapper::-webkit-scrollbar {
+    width: 5px;
+}
+.multiselect__content-wrapper::-webkit-scrollbar-thumb {
+    background-color: rgba(99, 102, 241, 0.3); /* Indigo */
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+.multiselect__content-wrapper::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(99, 102, 241, 0.5);
+}
+
+/*===========
+CAMBIOS GLOBALES AL SCROLLBAR WEBKIT
+===========*/
+/* Scrollbar discreto para vue-multiselect */
+*::-webkit-scrollbar {
+    width: 6px;
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: rgba(100, 116, 139, 0.2); /* slate-500 transparente */
+    border-radius: 4px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+/*===========
+ICONOS
+===========*/
+
+.bg-green-500 {
+    --tw-bg-opacity: 1;
+    background-color: var(--colorPrincipal);
+    padding-bottom: 11px !important;
+}
+.bg-green-500:hover {
+    background-color: var(--colorSecundario) !important;
+}
+.bg-green-500 svg {
+    position: relative;
+    top: 1px;
+}
+
+.svgIcon {
+    color: #fff;
+    fill: #fff;
+}
+.bgIconTrash,
+.bgIconEdit {
+    border-radius: 5px;
+    padding: 7px;
+}
+
+.bgIconEdit {
+    background: #00c853; /* Verde brillante (tipo "Success") */
+}
+
+.bgIconTrash {
+    background: #d50000; /* Rojo intenso (tipo "Error") */
+}
+
+.bgIconEdit:hover,
+.bgIconTrash:hover {
+    background: var(--colorSecundario);
+}
+
+.modaleStyle {
+    background: #000000b2;
+    height: 100vh;
+    padding: 30px 20px;
+    overflow: scroll;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    align-items: flex-start;
+    flex: none !important;
+}
+
+.modaleStyle::-webkit-scrollbar {
+    display: none; /* Chrome, Safari y Edge */
+}
+.modaleStyle > div {
+    position: relative;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    margin: auto;
+    background: #fff !important;
+}
+
+.modaleStyle > div label {
+    font-size: 13px;
+    font-weight: 100;
+}
+
+.from-blue-600 {
+    --tw-gradient-from: var(--colorPrincipal);
+    background: var(--colorPrincipal);
+}
+.from-blue-600:hover {
+    --tw-gradient-from: var(--colorSecundario);
+    background: var(--colorSecundario);
+}
+.bg-gradient-to-br.from-blue-600.to-indigo-600.p-1.rounded-xl.shadow-2xl.w-full.max-w-2xl.transition-all {
+    background: #fff;
+    padding: 0;
+}
+
+.botonesTablaReportes button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px 15px;
+}
+.botonesTablaReportes
+    .bgIconEdit.text-white.shadow-md.transition.transform::after {
+    content: "Editar";
+    font-size: 15px;
+    margin-left: 10px;
+}
+
+.botonesTablaReportes
+    .bgIconTrash.text-white.shadow-md.transition.transform::after {
+    content: "Eliminar";
+    font-size: 12px;
+    margin-left: 8px;
+}
+
+.filtros > span {
+    position: relative;
+    top: 6px;
+}
+
+.customMenu span {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+    display: block;
+    text-align: left;
+}
+.p-m-10 {
+    padding: 13px;
+    margin-bottom: 10px;
+}
+
+.headerReportes {
+    text-align: center;
+}
+.width-50 {
+    width: 49%;
+}
+.width-49 > div {
+    width: 48%;
+}
+
+@media screen and (max-width: 992px) {
+  .width-50 { width: 100% !important;}
+}
