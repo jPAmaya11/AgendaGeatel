@@ -13,12 +13,14 @@ class CampaniaMensaje extends Model
 
     protected $fillable = [
         'campania_id',
+        'orden',
         'mensaje',
         'tipo_mensaje',
         'url_archivo',
     ];
 
     protected $casts = [
+        'orden' => 'integer',
         'mensaje' => 'string',
     ];
 
@@ -27,10 +29,7 @@ class CampaniaMensaje extends Model
         return $this->belongsTo(Campania::class, 'campania_id');
     }
 
-    public function esTexto()
-    {
-        return $this->tipo_mensaje === 'texto';
-    }
+    public function esTexto() { return $this->tipo_mensaje === 'texto'; }
 
     public function esArchivo()
     {

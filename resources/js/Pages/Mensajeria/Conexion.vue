@@ -13,14 +13,15 @@
                   class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             Crear Nueva Conexión
           </button>
-          <button @click="fetchConexiones"
-                  class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-            Refrescar desde BD
+
+          <button @click="openAsignacionModal = true"
+                  class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700">
+            Asignar Usuario / Filtro
           </button>
         </div>
 
-        <!-- Tabla de Conexiones -->
-        <div class="overflow-x-auto bg-white shadow rounded">
+        <!-- TABLA DE CONEXIONES -->
+        <div class="overflow-x-auto bg-white shadow rounded mb-6">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
@@ -32,96 +33,156 @@
                 <th class="px-6 py-3 text-center text-sm font-medium text-gray-500">Acciones</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
 
+            <tbody class="divide-y divide-gray-200">
+              <!-- Solo conexiones activas -->
               <template v-for="conexion in conexiones" :key="conexion.id">
-                <!-- Fila principal -->
+
                 <tr>
-                  <td class="px-6 py-4 text-sm text-gray-900">{{ conexion.id }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-900">{{ conexion.nombre }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-900">{{ conexion.host }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-900 capitalize">
-                    <span :class="{
-                      'text-green-600 font-semibold': conexion.estado === 'activo',
-                      'text-red-600 font-semibold': conexion.estado === 'error'
-                    }">{{ conexion.estado }}</span>
+                  <td class="px-6 py-4">{{ conexion.id }}</td>
+                  <td class="px-6 py-4">{{ conexion.nombre }}</td>
+                  <td class="px-6 py-4">{{ conexion.host }}</td>
+
+                  <td class="px-6 py-4 capitalize">
+                    <span class="text-green-600 font-bold">{{ conexion.estado }}</span>
                   </td>
-                  <td class="px-6 py-4 text-sm text-gray-900">{{ conexion.admin?.name || '-' }}</td>
-                  <td class="px-6 py-4 text-center text-sm flex justify-center gap-2">
+
+                  <td class="px-6 py-4">{{ conexion.admin?.name || '-' }}</td>
+
+                  <td class="px-6 py-4 flex justify-center gap-2">
                     <button @click="eliminarConexion(conexion.id)"
-                            class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700">
+                            class="px-2 py-1 bg-red-600 text-white rounded">
                       Eliminar
                     </button>
+
                     <button @click="toggleSesiones(conexion)"
-                            class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">
+                            class="px-2 py-1 bg-yellow-500 text-white rounded">
                       {{ conexion.showSesiones ? 'Ocultar' : 'Probar' }}
                     </button>
                   </td>
                 </tr>
 
-                <!-- Fila de sesiones -->
-<tr v-if="conexion.showSesiones" class="bg-gray-50">
-  <td colspan="6" class="px-6 py-4">
-    <div v-if="conexion.sesiones?.length">
-      <table class="min-w-full divide-y divide-gray-300">
-        <thead>
-          <tr class="bg-gray-100">
-            <th class="px-3 py-1 text-left text-sm text-gray-600">Nombre</th>
-            <th class="px-3 py-1 text-left text-sm text-gray-600">Teléfono</th>
-            <th class="px-3 py-1 text-left text-sm text-gray-600">Estado</th>
-            <th class="px-3 py-1 text-left text-sm text-gray-600">Enviados</th>
-            <th class="px-3 py-1 text-left text-sm text-gray-600">Pendientes</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="s in conexion.sesiones" :key="s.nombre">
-            <td class="px-3 py-1 text-sm text-gray-700">{{ s.nombre }}</td>
-            <td class="px-3 py-1 text-sm text-gray-700">{{ s.telefono }}</td>
-            <td class="px-3 py-1 text-sm text-gray-700 capitalize">{{ s.estado }}</td>
-            <td class="px-3 py-1 text-sm text-gray-700">{{ s.enviados }}</td>
-            <td class="px-3 py-1 text-sm text-gray-700">{{ s.pendientes }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    <div v-else class="text-gray-500">No hay sesiones disponibles.</div>
-  </td>
-</tr>
+                <!-- DETALLE DE SESIONES SOLO WORKING -->
+                <tr v-if="conexion.showSesiones" class="bg-gray-50">
+                  <td colspan="6" class="px-6 py-4">
+                    <div v-if="conexion.sesiones && conexion.sesiones.filter(s => s.estado === 'working').length">
+                      <table class="min-w-full divide-y divide-gray-300 text-sm">
+                        <thead class="bg-gray-100">
+                          <tr>
+                            <th class="px-3 py-1">Nombre</th>
+                            <th class="px-3 py-1">Teléfono</th>
+                            <th class="px-3 py-1">Estado</th>
+                          </tr>
+                        </thead>
 
+                        <tbody>
+                          <tr v-for="s in conexion.sesiones.filter(s => s.estado === 'working')" :key="s.nombre">
+                            <td class="px-3 py-1">{{ s.nombre }}</td>
+                            <td class="px-3 py-1">{{ s.telefono }}</td>
+                            <td class="px-3 py-1 capitalize">{{ s.estado }}</td>
+                          </tr>
+                        </tbody>
+                      </table>
+                    </div>
+
+                    <div v-else class="text-gray-500 text-sm">No hay sesiones activas.</div>
+                  </td>
+                </tr>
               </template>
+            </tbody>
+          </table>
+        </div>
 
-              <tr v-if="conexiones.length === 0">
-                <td colspan="6" class="px-6 py-4 text-center text-gray-500">No hay conexiones registradas.</td>
+        <!-- TABLA DE ASIGNACIONES -->
+        <h3 class="text-lg font-semibold mb-2">Asignaciones de Usuario / Filtro</h3>
+
+        <div class="overflow-x-auto bg-white shadow rounded">
+          <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-100">
+              <tr>
+                <th class="px-4 py-2 text-left text-sm">Usuario</th>
+                <th class="px-4 py-2 text-left text-sm">Conexión</th>
+                <th class="px-4 py-2 text-left text-sm">Filtro</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr v-for="a in asignaciones" :key="a.id" class="border-b">
+                <td class="px-4 py-2">{{ a.user.name }}</td>
+                <td class="px-4 py-2">{{ a.waha_conexion.nombre }}</td>
+                <td class="px-4 py-2">{{ a.filtro }}</td>
+              </tr>
+
+              <tr v-if="asignaciones.length == 0">
+                <td colspan="3" class="px-4 py-2 text-center text-gray-500">
+                  No hay asignaciones registradas
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Modal Crear Conexión -->
-        <div v-if="openModal" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+        <!-- MODALES... se mantienen igual -->
+        <!-- MODAL CREAR CONEXIÓN -->
+        <div v-if="openModal"
+             class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
           <div class="bg-white p-6 rounded shadow w-full max-w-md">
+
             <h3 class="text-lg font-semibold mb-4">Nueva Conexión</h3>
 
             <div class="mb-2">
-              <label class="block text-sm font-medium text-gray-700">Nombre</label>
-              <input v-model="form.nombre" type="text" class="mt-1 w-full border rounded px-2 py-1" />
+              <label class="text-sm">Nombre</label>
+              <input v-model="form.nombre" class="w-full border rounded px-2 py-1" />
             </div>
 
             <div class="mb-2">
-              <label class="block text-sm font-medium text-gray-700">Host (URL)</label>
-              <input v-model="form.host" type="url" class="mt-1 w-full border rounded px-2 py-1" />
+              <label class="text-sm">Host</label>
+              <input v-model="form.host" class="w-full border rounded px-2 py-1" />
             </div>
 
             <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">API Key</label>
-              <input v-model="form.token_api" type="text" class="mt-1 w-full border rounded px-2 py-1" />
+              <label class="text-sm">API Key</label>
+              <input v-model="form.token_api" class="w-full border rounded px-2 py-1" />
             </div>
 
             <div class="flex justify-end gap-2">
-              <button @click="closeModal"
-                      class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
-              <button @click="crearConexion"
-                      class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Guardar</button>
+              <button @click="closeModal" class="px-3 py-1 bg-gray-300 rounded">Cancelar</button>
+              <button @click="crearConexion" class="px-3 py-1 bg-blue-600 text-white rounded">Guardar</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- MODAL ASIGNAR USUARIO -->
+        <div v-if="openAsignacionModal"
+             class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <div class="bg-white p-6 rounded shadow w-full max-w-md">
+
+            <h3 class="text-lg font-semibold mb-4">Asignar Usuario / Filtro</h3>
+
+            <div class="mb-3">
+              <label class="text-sm">Usuario</label>
+              <select v-model="asignar.user_id" class="w-full border rounded px-2 py-1">
+                <option disabled value="">Seleccione...</option>
+                <option v-for="u in usuarios" :value="u.id">{{ u.name }}</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="text-sm">Conexión WAHA</label>
+              <select v-model="asignar.waha_conexion_id" class="w-full border rounded px-2 py-1">
+                <option disabled value="">Seleccione...</option>
+                <option v-for="c in conexiones" :value="c.id">{{ c.nombre }}</option>
+              </select>
+            </div>
+
+            <div class="mb-3">
+              <label class="text-sm">Filtro</label>
+              <input v-model="asignar.filtro" class="w-full border rounded px-2 py-1" />
+            </div>
+
+            <div class="flex justify-end gap-2">
+              <button @click="openAsignacionModal = false" class="px-3 py-1 bg-gray-300 rounded">Cancelar</button>
+              <button @click="guardarAsignacion" class="px-3 py-1 bg-purple-600 text-white rounded">Guardar</button>
             </div>
           </div>
         </div>
@@ -132,99 +193,89 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 
-const conexiones = ref([])
-const openModal = ref(false)
-const form = ref({ nombre: '', host: '', token_api: '' })
+const conexiones = ref([]);
+const asignaciones = ref([]);
+const usuarios = ref([]);
 
+const openModal = ref(false);
+const openAsignacionModal = ref(false);
+
+const form = ref({ nombre: '', host: '', token_api: '' });
+const asignar = ref({ user_id: '', waha_conexion_id: '', filtro: '' });
+
+// CARGAR CONEXIONES
 async function fetchConexiones() {
-  try {
-    const res = await axios.get('/conexion/list')
-    conexiones.value = res.data.data.map(c => ({
-      ...c,
-      showSesiones: false,
-      sesiones: []
-    }))
-  } catch (err) {
-    console.error('Error al cargar conexiones:', err)
-  }
+  const res = await axios.get('/conexion/list');
+  conexiones.value = res.data.data.map(c => ({ ...c, showSesiones: false, sesiones: [] }));
 }
 
+// CARGAR ASIGNACIONES
+async function fetchAsignaciones() {
+  const allAsignaciones = [];
+  for (const c of conexiones.value) {
+    try {
+      const res = await axios.get(`/conexion/${c.id}/asignaciones`);
+      allAsignaciones.push(...res.data.data);
+    } catch {}
+  }
+  asignaciones.value = allAsignaciones;
+}
+
+// CARGAR USUARIOS
+async function fetchUsuarios() {
+  const res = await axios.get('/usuarios/list');
+  usuarios.value = res.data.data;
+}
+
+// CRUD CONEXIONES
 function closeModal() {
-  openModal.value = false
-  form.value = { nombre: '', host: '', token_api: '' }
+  openModal.value = false;
+  form.value = { nombre: '', host: '', token_api: '' };
 }
 
 async function crearConexion() {
-  try {
-    await axios.post('/conexion', form.value)
-    await fetchConexiones()
-    closeModal()
-  } catch (err) {
-    console.error(err)
-    alert('Error al crear la conexión. Revisa los campos.')
-  }
+  await axios.post('/conexion', form.value);
+  await fetchConexiones();
+  closeModal();
 }
 
 async function eliminarConexion(id) {
-  if (!confirm('¿Eliminar esta conexión?')) return
-  try {
-    await axios.delete(`/conexion/${id}`)
-    await fetchConexiones()
-  } catch (err) {
-    console.error(err)
-    alert('Error al eliminar la conexión.')
-  }
+  if (!confirm('¿Eliminar esta conexión?')) return;
+  await axios.delete(`/conexion/${id}`);
+  await fetchConexiones();
 }
 
+// SESIONES SOLO WORKING
 async function toggleSesiones(conexion) {
   if (conexion.showSesiones) {
-    conexion.showSesiones = false
-    return
+    conexion.showSesiones = false;
+    return;
   }
-
-  try {
-    const res = await axios.get(`/conexion/${conexion.id}/test`)
-    if (res.data.ok) {
-      // 🔹 Filtrar solo las sesiones con estado "working"
-      conexion.sesiones = res.data.data.filter(s => 
-        s.estado && s.estado.toLowerCase() === 'working'
-      )
-    } else {
-      conexion.sesiones = []
-      alert('Error al obtener sesiones: ' + res.data.message)
-    }
-  } catch (err) {
-    conexion.sesiones = []
-    console.error(err)
-    alert('No se pudo conectar al servidor WAHA.')
-  } finally {
-    conexion.showSesiones = true
-  }
+  const res = await axios.get(`/conexion/${conexion.id}/test`);
+  conexion.sesiones = res.data.ok ? res.data.data.filter(s => s.estado === 'working') : [];
+  conexion.showSesiones = true;
 }
 
-
-// Refrescar estado de conexiones automáticamente
-async function refrescarEstado() {
-  for (let conexion of conexiones.value) {
-    try {
-      const res = await axios.get(`/conexion/${conexion.id}/sesiones`)
-      if (res.data.estado) conexion.estado = res.data.estado
-    } catch {
-      conexion.estado = 'error'
-    }
+// ASIGNACIONES
+async function guardarAsignacion() {
+  if (!asignar.value.waha_conexion_id) {
+    alert('Selecciona la conexión primero.');
+    return;
   }
+  await axios.post(`/conexion/${asignar.value.waha_conexion_id}/asignacion`, asignar.value);
+  openAsignacionModal.value = false;
+  asignar.value = { user_id: '', waha_conexion_id: '', filtro: '' };
+  await fetchAsignaciones();
 }
 
-onMounted(() => {
-  fetchConexiones()
-  setInterval(refrescarEstado, 10000)
-})
+// AUTOLOAD
+onMounted(async () => {
+  await fetchConexiones();
+  await fetchUsuarios();
+  await fetchAsignaciones();
+});
 </script>
-
-<style scoped>
-/* Estilos opcionales */
-</style>

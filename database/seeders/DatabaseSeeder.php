@@ -56,6 +56,12 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('test'),
         ]);
 
+        $juan = User::factory()->create([
+            'name' => 'Juan',
+            'email' => 'jamayaquiroz@gmail.com',
+            'password' => bcrypt('juan123'),
+        ]);
+
 
         // 3. Asignar roles a usuarios
         $rolAdmin = Role::where('name', 'admin')->first();

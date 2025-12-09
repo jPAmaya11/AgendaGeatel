@@ -15,13 +15,12 @@ class Campania extends Model
         'user_id',
         'nombre',
         'descripcion',
-        'waha_sesiones',
         'estado',
         'fecha_inicio',
         'fecha_fin',
         'total_destinatarios',
         'total_enviados',
-        'total_leidos',
+        'total_pendientes',
         'total_errores',
         'usar_retraso_lote',
         'retraso_lote_min',
@@ -33,20 +32,27 @@ class Campania extends Model
     ];
 
     protected $casts = [
-        'waha_sesiones' => 'array',
+        'user_id' => 'integer',
+        'total_destinatarios' => 'integer',
+        'total_enviados' => 'integer',
+        'total_pendientes' => 'integer',
+        'total_errores' => 'integer',
         'usar_retraso_lote' => 'boolean',
         'usar_retraso_mensaje' => 'boolean',
         'fecha_inicio' => 'datetime',
-        'fecha_fin' => 'datetime'
+        'fecha_fin' => 'datetime',
     ];
 
-    /* ============================================================
-     * RELACIONES
-     * ============================================================ */
+    /* RELACIONES */
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function sesiones()
+    {
+        return $this->hasMany(CampaniaSesion::class, 'campania_id');
     }
 
     public function mensajes()
@@ -69,9 +75,8 @@ class Campania extends Model
         return $this->hasMany(LogRespuestaCliente::class, 'campania_id');
     }
 
-    /* ============================================================
-     * SCOPES
-     * ============================================================ */
+    /* SCOPES */
+
     public function scopeActivas($query)
     {
         return $query->where('estado', 'activa');

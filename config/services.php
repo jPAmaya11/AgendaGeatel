@@ -35,4 +35,23 @@ return [
         ],
     ],
 
+    'twilio' => [
+    'sid'             => env('TWILIO_SID'),
+    'auth_token'      => env('TWILIO_AUTH_TOKEN'),
+    'sms_from'        => env('TWILIO_SMS_FROM'),
+    'whatsapp_from'   => env('TWILIO_WHATSAPP_FROM'),
+    ],
+
+    'waha' => [
+    'api_url' =>    env('WAHA_API_URL'),
+    'api_key' => env('WAHA_API_KEY'),
+    'whatsapp_from' => env('WAHA_WHATSAPP_FROM'),
+],                  
+
+    'google' => [
+    'client_id'     => env('GOOGLE_CLIENT_ID'),
+    'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+    'redirect'      => env('GOOGLE_REDIRECT_URI'),
+    ],
+
 ];

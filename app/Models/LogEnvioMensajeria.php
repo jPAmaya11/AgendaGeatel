@@ -14,25 +14,18 @@ class LogEnvioMensajeria extends Model
     protected $fillable = [
         'campania_id',
         'destinatario_id',
-        'waha_sesion_nombre',
+        'sesion_waha',
         'numero_bot',
+        'codigo_pais_cliente',
         'numero_cliente',
         'mensaje_enviado',
         'estado',
         'fecha_envio',
-        'fecha_entregado',
-        'fecha_leido',
     ];
 
     protected $casts = [
         'fecha_envio' => 'datetime',
-        'fecha_entregado' => 'datetime',
-        'fecha_leido' => 'datetime',
     ];
-
-    /* ============================================================
-     * 🔹 RELACIONES
-     * ============================================================ */
 
     public function campania()
     {
@@ -44,31 +37,11 @@ class LogEnvioMensajeria extends Model
         return $this->belongsTo(CampaniaDestinatario::class, 'destinatario_id');
     }
 
-    /* ============================================================
-     * 🔹 MÉTODOS AUXILIARES (opcional, pero útil)
-     * ============================================================ */
-
     public function marcarComoEnviado()
     {
         $this->update([
             'estado' => 'enviado',
             'fecha_envio' => now(),
-        ]);
-    }
-
-    public function marcarComoEntregado()
-    {
-        $this->update([
-            'estado' => 'entregado',
-            'fecha_entregado' => now(),
-        ]);
-    }
-
-    public function marcarComoLeido()
-    {
-        $this->update([
-            'estado' => 'leido',
-            'fecha_leido' => now(),
         ]);
     }
 

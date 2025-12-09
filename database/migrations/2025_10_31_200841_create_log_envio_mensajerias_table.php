@@ -13,21 +13,21 @@ return new class extends Migration
             $table->foreignId('campania_id')->constrained('campanias')->cascadeOnDelete();
             $table->foreignId('destinatario_id')->constrained('campania_destinatarios')->cascadeOnDelete();
 
-            // Guardamos el nombre de la sesión usada
-            $table->string('waha_sesion_nombre')->nullable()->comment('Nombre de la sesión usada para el envío');
+            // Nombre corto de la sesión usada
+            $table->string('sesion_waha')->nullable();
 
-            $table->string('numero_bot');
+            $table->string('numero_bot')->nullable();
+            $table->string('codigo_pais_cliente', 5)->nullable();
             $table->string('numero_cliente');
+
             $table->text('mensaje_enviado')->nullable();
-            $table->enum('estado', ['pendiente', 'enviado', 'entregado', 'leido', 'error'])->default('pendiente');
+            $table->enum('estado', ['pendiente', 'enviado', 'error'])->default('pendiente');
             $table->dateTime('fecha_envio')->nullable();
-            $table->dateTime('fecha_entregado')->nullable();
-            $table->dateTime('fecha_leido')->nullable();
             $table->timestamps();
 
             // índices para optimización de reportes
             $table->index(['campania_id', 'estado']);
-            $table->index(['waha_sesion_nombre', 'fecha_envio']);
+            $table->index(['sesion_waha', 'fecha_envio']);
         });
     }
 

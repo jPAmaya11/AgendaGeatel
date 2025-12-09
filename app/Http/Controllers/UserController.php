@@ -162,4 +162,14 @@ class UserController extends Controller
 
         $user->reportes()->sync($data['reportes'] ?? []);
     }
+
+    public function list()
+{
+    // Devuelve solo id y nombre para el select
+    $users = User::select('id', 'name')->get();
+
+    return response()->json([
+        'data' => $users
+    ]);
+}
 }

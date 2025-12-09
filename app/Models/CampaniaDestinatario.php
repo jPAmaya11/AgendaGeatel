@@ -13,8 +13,8 @@ class CampaniaDestinatario extends Model
 
     protected $fillable = [
         'campania_id',
-        'codigo_pais',
         'nombre',
+        'codigo_pais',
         'numero',
         'variables_json',
         'estado_envio',
@@ -29,26 +29,33 @@ class CampaniaDestinatario extends Model
         return $this->belongsTo(Campania::class, 'campania_id');
     }
 
-    public function log()
+    public function logs()
     {
         return $this->hasMany(LogEnvioMensajeria::class, 'destinatario_id');
     }
 
-    /* ============================================================
-     * MÉTODOS AUXILIARES
-     * ============================================================ */
     public function marcarEnviado()
     {
-        $this->update(['estado_envio' => 'enviado']);
+        return $this->update(['estado_envio' => 'enviado']);
     }
 
     public function marcarError()
     {
-        $this->update(['estado_envio' => 'error']);
+        return $this->update(['estado_envio' => 'error']);
+    }
+
+    public function estaPendiente()
+    {
+        return $this->estado_envio === 'pendiente';
+    }
+
+    public function numeroLimpio()
+    {
+        return preg_replace('/\D/', '', $this->codigo_pais . $this->numero);
     }
 
     public function chatId()
     {
-        return preg_replace('/\D/', '', $this->numero) . '@c.us';
+        return $this->numeroLimpio() . '@c.us';
     }
 }

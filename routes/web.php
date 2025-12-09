@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schedule;
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
@@ -25,6 +26,9 @@ use Inertia\Inertia;
 use App\Http\Controllers\WahaConexionController;
 use App\Http\Controllers\LogController;
 use App\Http\Controllers\CampaniaController;
+
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\GoogleCalendarController;
 
 // ===================
 // RUTA INICIAL
@@ -97,6 +101,23 @@ Route::middleware('auth')->group(function () {
     Route::middleware('can:vodafone.guardar')->post('/vodafone', [VodafoneController::class, 'store'])->name('vodafone.store');
     Route::middleware('can:vodafone.editar')->put('/vodafone/{vodafone}', [VodafoneController::class, 'update'])->name('vodafone.update');
     Route::middleware('can:vodafone.eliminar')->delete('/vodafone/{vodafone}', [VodafoneController::class, 'destroy'])->name('vodafone.destroy');
+
+    // ===================
+    // EVENTOS / AGENDA
+    // ===================
+    Route::get('/events', [EventController::class, 'index'])->name('events.index');
+    Route::post('/events', [EventController::class, 'store'])->name('events.store');
+    Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
+    Route::delete('/events/{event}', [EventController::class, 'destroy'])->name('events.destroy');
+
+    // ===================
+    // GOOGLE CALENDAR
+    // ===================
+    Route::middleware(['auth'])->group(function () {
+    Route::get('/google/redirect', [GoogleCalendarController::class, 'redirect'])->name('google.redirect');
+    Route::get('/google/callback', [GoogleCalendarController::class, 'callback'])->name('google.callback');
+});
+
 });
 
 // ===================
@@ -126,23 +147,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware(['auth'])->group(function () {
 
-    /* ============================================================
-     * 🔹 VISTAS PRINCIPALES (Inertia)
-     * ============================================================ */
+    // VISTAS PRINCIPALES (Inertia)
     Route::get('/conexion', [WahaConexionController::class, 'index'])
         ->name('conexion.view');
 
     Route::get('/campania', fn() => inertia('Mensajeria/Campania'))
         ->name('campania.view');
 
-    // 🔸 Vista de reportes (Mensajeria/Reporte.vue)
     Route::get('/reporte', [LogController::class, 'index'])
         ->name('reporte.view');
 
+    // RUTA PARA OBTENER USUARIOS (para el modal de asignación)
+    Route::get('/usuarios/list', [UserController::class, 'list'])
+        ->name('usuarios.list');
 
-    /* ============================================================
-     * 🔹 WAHA CONEXIONES
-     * ============================================================ */
+    // WAHA CONEXIONES
     Route::prefix('conexion')->name('conexion.')->group(function () {
         Route::get('/list', [WahaConexionController::class, 'list'])->name('list');
         Route::post('/', [WahaConexionController::class, 'store'])->name('store');
@@ -150,21 +169,25 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/{waha}', [WahaConexionController::class, 'destroy'])->name('destroy');
         Route::get('/{id}/test', [WahaConexionController::class, 'test'])->name('test');
         Route::get('/{id}/sesiones', [WahaConexionController::class, 'sesionesRealTime'])->name('sesiones');
+
+        // ASIGNACIONES USUARIO / FILTRO
+        Route::get('/{id}/asignaciones', [WahaConexionController::class, 'listarAsignaciones'])
+            ->name('asignaciones');
+
+        Route::post('/{id}/asignacion', [WahaConexionController::class, 'storeAsignacion'])
+            ->name('asignacion.store');
+
+        Route::delete('/asignacion/{id}', [WahaConexionController::class, 'deleteAsignacion'])
+            ->name('asignacion.destroy');
     });
 
-
-    /* ============================================================
-     * 🔹 MENSAJES DIRECTOS Y SESIONES WAHA
-     * ============================================================ */
+    // MENSAJES DIRECTOS Y SESIONES WAHA
     Route::prefix('waha')->name('waha.')->group(function () {
         Route::post('/enviar', [WahaConexionController::class, 'enviarMensaje'])->name('enviar');
         Route::get('/sesiones/disponibles', [WahaConexionController::class, 'sesionesDisponibles'])->name('sesiones');
     });
 
-
-    /* ============================================================
-     * 🔹 CAMPAÑAS
-     * ============================================================ */
+    // CAMPAÑAS
     Route::prefix('campania')->name('campania.')->group(function () {
         Route::get('/list', [CampaniaController::class, 'index'])->name('list');
         Route::post('/', [CampaniaController::class, 'store'])->name('store');
@@ -172,15 +195,14 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/{campania}', [CampaniaController::class, 'update'])->name('update');
         Route::delete('/{campania}', [CampaniaController::class, 'destroy'])->name('destroy');
         Route::post('/{campania}/iniciar', [CampaniaController::class, 'iniciar'])->name('iniciar');
-        Route::post('/{campania}/enviar', [CampaniaController::class, 'enviar'])->name('enviar');
+        Route::post('/{campania}/enviar', [CampaniaController::class, 'procesarEnvio'])->name('enviar');
     });
 
-
-    /* ============================================================
-     * 🔹 REPORTES (Logs de Envíos y Respuestas - API)
-     * ============================================================ */
+    // REPORTES (Logs de Envíos y Respuestas - API)
     Route::prefix('logs')->name('logs.')->group(function () {
         Route::get('/envios/{campania}', [LogController::class, 'getEnviosByCampania'])->name('envios.campania');
         Route::get('/respuestas/{campania}', [LogController::class, 'getRespuestasByCampania'])->name('respuestas.campania');
     });
+
 });
+Schedule::command('events:send-reminders')->everyMinute();

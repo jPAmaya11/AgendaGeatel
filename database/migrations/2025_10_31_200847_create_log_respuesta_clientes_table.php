@@ -10,18 +10,27 @@ return new class extends Migration
     {
         Schema::create('log_respuestas_clientes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('campania_id')->constrained('campanias')->cascadeOnDelete();
+
+            // Campaña a la que pertenece la respuesta
+            $table->foreignId('campania_id')
+                ->constrained('campanias')
+                ->cascadeOnDelete();
+
+            // Datos del cliente que respondió
+            $table->string('codigo_pais_cliente', 10);
             $table->string('numero_cliente');
-            $table->string('numero_bot');
-            $table->enum('tipo_wsp_cliente', ['personal', 'empresarial'])->default('personal');
-            $table->enum('formato_mensaje', ['texto', 'imagen', 'video', 'documento'])->default('texto');
+
+            // Contenido del mensaje
             $table->text('mensaje')->nullable();
+
+            // Fecha de registro del mensaje recibido
             $table->dateTime('fecha_registro')->nullable();
+
             $table->timestamps();
 
-            // Índices útiles para reportes y búsquedas
+            // Índices para búsquedas rápidas
             $table->index(['campania_id', 'fecha_registro']);
-            $table->index('numero_cliente');
+            $table->index(['codigo_pais_cliente', 'numero_cliente']);
         });
     }
 

@@ -7,170 +7,166 @@
     <div class="py-6">
       <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
 
-        <!-- Botones principales -->
+        <!-- Botones superiores -->
         <div class="flex gap-2 mb-4">
-          <button @click="openModalCrear = true"
-                  class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button @click="openModalCrear = true" class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
             Crear Nueva Campaña
-          </button>
-          <button @click="fetchCampanias"
-                  class="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">
-            Refrescar
           </button>
         </div>
 
-        <!-- Tabla de Campañas -->
+        <!-- Tabla -->
         <div class="overflow-x-auto bg-white shadow rounded">
           <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-gray-50">
               <tr>
-                <th class="px-6 py-3 text-left text-sm font-medium text-gray-500">ID</th>
-                <th class="px-6 py-3 text-left text-sm font-medium text-gray-500">Nombre</th>
-                <th class="px-6 py-3 text-left text-sm font-medium text-gray-500">Descripción</th>
-                <th class="px-6 py-3 text-left text-sm font-medium text-gray-500">Destinatarios</th>
-                <th class="px-6 py-3 text-left text-sm font-medium text-gray-500">Estado</th>
-                <th class="px-6 py-3 text-left text-sm font-medium text-gray-500">Mensajes</th>
-                <th class="px-6 py-3 text-center text-sm font-medium text-gray-500">Acciones</th>
+                <th class="px-6 py-3 text-left">ID</th>
+                <th class="px-6 py-3 text-left">Nombre</th>
+                <th class="px-6 py-3 text-left">Destinatarios</th>
+                <th class="px-6 py-3 text-left">Estado</th>
+                <th class="px-6 py-3 text-center">Acciones</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200">
 
-              <template v-for="campania in campanias" :key="campania.id">
-                <tr>
-                  <td class="px-6 py-4 text-sm text-gray-900">{{ campania.id }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-900">{{ campania.nombre }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-900">{{ campania.descripcion || '-' }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-900">{{ campania.total_destinatarios }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-900 capitalize">{{ campania.estado }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-900">
-                    <ul>
-                      <li v-for="m in campania.mensajes" :key="m.mensaje">
-                        {{ m.tipo_mensaje.toUpperCase() }}: {{ m.mensaje }}
-                      </li>
-                    </ul>
-                  </td>
-                  <td class="px-6 py-4 text-center text-sm flex justify-center gap-2">
-                    <button @click="iniciarCampaniaModal(campania)"
-                            class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">
-                      Iniciar
-                    </button>
-                    <button @click="eliminarCampania(campania.id)"
-                            class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700">
-                      Eliminar
-                    </button>
-                  </td>
-                </tr>
-              </template>
+            <tbody class="divide-y divide-gray-200">
+              <tr v-for="c in campanias" :key="c.id">
+                <td class="px-6 py-4 text-sm">{{ c.id }}</td>
+                <td class="px-6 py-4 text-sm">{{ c.nombre }}</td>
+                <td class="px-6 py-4 text-sm">{{ c.total_destinatarios }}</td>
+                <td class="px-6 py-4 text-sm capitalize">{{ c.estado }}</td>
+
+                <td class="px-6 py-4 text-center flex justify-center gap-2">
+                  <!-- Iniciar solo si pendiente -->
+                  <button v-if="c.estado === 'pendiente'" @click="iniciarCampaniaModal(c)"
+                    class="px-2 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">
+                    Iniciar
+                  </button>
+
+                  <!-- Enviar solo si activa -->
+                  <button v-if="c.estado === 'activa'" @click="procesarCampania(c)"
+                    class="px-2 py-1 bg-green-600 text-white rounded hover:bg-green-700">
+                    Enviar
+                  </button>
+
+                  <button @click="eliminarCampania(c.id)"
+                    class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700">
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
 
               <tr v-if="campanias.length === 0">
-                <td colspan="7" class="px-6 py-4 text-center text-gray-500">No hay campañas registradas.</td>
+                <td colspan="5" class="px-6 py-4 text-center text-gray-500">
+                  No hay campañas registradas.
+                </td>
               </tr>
             </tbody>
           </table>
         </div>
 
-        <!-- Modal Crear Campaña -->
-        <div v-if="openModalCrear" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div class="bg-white p-6 rounded shadow w-full max-w-2xl overflow-y-auto max-h-[90vh]">
+
+        <!-- MODAL CREAR -->
+        <div v-if="openModalCrear" class="modal">
+          <div class="modal-box">
+
             <h3 class="text-lg font-semibold mb-4">Nueva Campaña</h3>
 
-            <div class="mb-2">
-              <label class="block text-sm font-medium text-gray-700">Nombre</label>
-              <input v-model="formCampania.nombre" type="text" class="mt-1 w-full border rounded px-2 py-1" />
+            <div class="mb-3">
+              <label class="label">Nombre</label>
+              <input v-model="form.nombre" type="text" class="input" />
             </div>
 
-            <div class="mb-2">
-              <label class="block text-sm font-medium text-gray-700">Descripción</label>
-              <textarea v-model="formCampania.descripcion" class="mt-1 w-full border rounded px-2 py-1"></textarea>
+            <div class="mb-3">
+              <label class="label">Descripción</label>
+              <textarea v-model="form.descripcion" class="input"></textarea>
             </div>
 
-            <!-- Mensajes -->
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Mensajes</label>
-              <div v-for="(m, index) in formCampania.mensajes" :key="index" class="flex gap-2 items-center mb-2">
-                <select v-model="m.tipo_mensaje" class="border rounded px-2 py-1">
+            <!-- MENSAJES -->
+            <div class="border p-3 rounded mb-3">
+              <label class="label">Mensajes</label>
+
+              <div v-for="(m, i) in form.mensajes" :key="i" class="flex gap-2 mb-2">
+                <select v-model="m.tipo_mensaje" class="input w-32">
                   <option value="texto">Texto</option>
                   <option value="imagen">Imagen</option>
                   <option value="video">Video</option>
                   <option value="documento">Documento</option>
                 </select>
-                <input v-model="m.mensaje" type="text" placeholder="Mensaje o URL archivo" class="border rounded px-2 py-1 flex-1" />
-                <button @click="formCampania.mensajes.splice(index,1)" class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700">Eliminar</button>
+
+                <input v-model="m.mensaje" placeholder="Mensaje o URL" class="input flex-1" />
+
+                <input v-if="m.tipo_mensaje !== 'texto'" v-model="m.url_archivo" placeholder="URL archivo"
+                  class="input flex-1" />
+
+                <button @click="form.mensajes.splice(i, 1)" class="btn-red">X</button>
               </div>
-              <button @click="formCampania.mensajes.push({mensaje:'', tipo_mensaje:'texto'})"
-                      class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
-                Agregar Mensaje
+
+              <button @click="addMensaje" class="btn-blue">+ Agregar Mensaje</button>
+            </div>
+
+            <!-- Archivo -->
+            <div class="mb-3">
+              <label class="label">Archivo Excel</label>
+              <input type="file" @change="handleFile" />
+            </div>
+
+            <!-- MANUALES -->
+            <div class="border p-3 rounded mb-3">
+              <label class="label">Destinatarios Manuales</label>
+
+              <div v-for="(d, i) in form.destinatarios_manual" :key="i" class="flex gap-2 mb-1">
+                <input v-model="d.codigo_pais" placeholder="Código" class="input w-20" />
+                <input v-model="d.numero" placeholder="Número" class="input w-40" />
+                <input v-model="d.nombre" placeholder="Nombre" class="input flex-1" />
+                <button @click="form.destinatarios_manual.splice(i, 1)" class="btn-red">X</button>
+              </div>
+
+              <button @click="addDestinatarioManual" class="btn-blue">
+                + Agregar Destinatario
               </button>
             </div>
 
-            <!-- Archivo de destinatarios -->
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Archivo Destinatarios</label>
-              <input type="file" @change="handleFile" class="mt-1 w-full" />
-            </div>
+            <!-- RETRASO -->
+            <div class="border p-3 rounded mb-3">
+              <label class="label">Retraso entre mensajes</label>
 
-            <!-- Números manuales -->
-            <div class="mb-4">
-              <label class="block text-sm font-medium text-gray-700">Números Manuales</label>
-              <div v-for="(n, index) in formCampania.numeros_manual" :key="index" class="flex gap-2 mb-1">
-                <input v-model="formCampania.numeros_manual[index]" type="text" placeholder="Número de teléfono" class="border rounded px-2 py-1 flex-1" />
-                <button @click="formCampania.numeros_manual.splice(index,1)" class="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700">Eliminar</button>
+              <div class="flex gap-2 items-center mb-2">
+                <input type="checkbox" v-model="form.usar_retraso_mensaje" />
+                Activar Retraso
               </div>
-              <button @click="formCampania.numeros_manual.push('')" class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">
-                Agregar Número
-              </button>
-            </div>
 
-            <!-- Retraso entre mensajes (opcional) -->
-            <div class="mb-4 border-t pt-4">
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                Retraso entre mensajes (opcional)
-              </label>
-              <div class="flex items-center gap-2 mb-2">
-                <input type="checkbox" v-model="formCampania.usar_retraso_mensaje" class="h-4 w-4" />
-                <span>Activar retraso entre mensajes</span>
-              </div>
-              <div v-if="formCampania.usar_retraso_mensaje" class="flex gap-2">
-                <div>
-                  <label class="block text-sm text-gray-600">Mínimo (segundos)</label>
-                  <input type="number" min="0" v-model.number="formCampania.retraso_mensaje_min"
-                         class="border rounded px-2 py-1 w-24" placeholder="0" />
-                </div>
-                <div>
-                  <label class="block text-sm text-gray-600">Máximo (segundos)</label>
-                  <input type="number" min="0" v-model.number="formCampania.retraso_mensaje_max"
-                         class="border rounded px-2 py-1 w-24" placeholder="0" />
-                </div>
+              <div v-if="form.usar_retraso_mensaje" class="flex gap-2">
+                <input type="number" v-model.number="form.retraso_mensaje_min" placeholder="Min (seg)"
+                  class="input w-24" />
+                <input type="number" v-model.number="form.retraso_mensaje_max" placeholder="Max (seg)"
+                  class="input w-24" />
               </div>
             </div>
 
             <div class="flex justify-end gap-2">
-              <button @click="closeModalCrear"
-                      class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
-              <button @click="crearCampania"
-                      class="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700">Guardar</button>
+              <button class="btn-gray" @click="cerrarModalCrear">Cancelar</button>
+              <button class="btn-blue" @click="crearCampania">Guardar</button>
             </div>
           </div>
         </div>
 
-        <!-- Modal Iniciar Campaña -->
-        <div v-if="openModalIniciar" class="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div class="bg-white p-6 rounded shadow w-full max-w-md">
-            <h3 class="text-lg font-semibold mb-4">Iniciar Campaña: {{ campañaActual.nombre }}</h3>
+        <!-- MODAL INICIAR -->
+        <div v-if="openModalIniciar" class="modal">
+          <div class="modal-box max-w-md">
+            <h3 class="text-lg font-semibold mb-4">
+              Iniciar Campaña: {{ campaniaActual?.nombre }}
+            </h3>
 
-            <div class="mb-2">
-              <label class="block text-sm font-medium text-gray-700">Selecciona Sesiones WAHA</label>
-              <div v-for="s in sesionesDisponibles" :key="s.nombre" class="flex items-center gap-2 mb-1">
-                <input type="checkbox" v-model="formIniciar.sesiones" :value="s.nombre" />
-                <span>{{ s.nombre }} ({{ s.telefono }}) - {{ s.conexion_nombre }}</span>
-              </div>
+            <label class="label mb-2">Selecciona sesiones WAHA</label>
+
+            <div v-for="s in sesiones" :key="s.nombre" class="flex items-center gap-2 mb-1">
+              <input type="checkbox" v-model="formIniciar.sesiones"
+                :value="{ nombre: s.nombre, numero_bot: s.telefono }" />
+              <span>{{ s.nombre }} ({{ s.telefono }})</span>
             </div>
 
-            <div class="flex justify-end gap-2">
-              <button @click="closeModalIniciar"
-                      class="px-3 py-1 bg-gray-300 rounded hover:bg-gray-400">Cancelar</button>
-              <button @click="iniciarCampania"
-                      class="px-3 py-1 bg-yellow-500 text-white rounded hover:bg-yellow-600">Iniciar</button>
+            <div class="flex justify-end gap-2 mt-4">
+              <button class="btn-gray" @click="cerrarModalIniciar">Cancelar</button>
+              <button class="btn-yellow" @click="iniciarCampania">Iniciar</button>
             </div>
           </div>
         </div>
@@ -181,167 +177,208 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
-import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue'
+import { ref, reactive, onMounted } from "vue";
+import axios from "axios";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 
-const campanias = ref([])
-const sesionesDisponibles = ref([])
-const openModalCrear = ref(false)
-const openModalIniciar = ref(false)
-const campañaActual = ref(null)
-const archivoDestinatarios = ref(null)
+const campanias = ref([]);
+const sesiones = ref([]);
 
-const formCampania = ref({
-  nombre: '',
-  descripcion: '',
-  mensajes: [{ mensaje: '', tipo_mensaje: 'texto' }],
-  numeros_manual: [],
+const openModalCrear = ref(false);
+const openModalIniciar = ref(false);
+const campaniaActual = ref(null);
+const archivoExcel = ref(null);
+
+const form = ref({
+  nombre: "",
+  descripcion: "",
+  mensajes: [{ mensaje: "", tipo_mensaje: "texto", url_archivo: "" }],
+  destinatarios_manual: [],
   usar_retraso_mensaje: false,
   retraso_mensaje_min: null,
-  retraso_mensaje_max: null
-})
+  retraso_mensaje_max: null,
+});
 
-const formIniciar = ref({ sesiones: [] })
+const formIniciar = reactive({ sesiones: [] });
 
-// 🔹 Fetch campañas
 async function fetchCampanias() {
-  try {
-    const res = await axios.get('/campania/list')
-    campanias.value = res.data.data
-  } catch (err) {
-    console.error(err)
-  }
+  const res = await axios.get("/campania/list");
+  campanias.value = res.data.data.map(c => ({
+    ...c,
+    sesiones_usadas: c.sesiones_usadas || [],
+  }));
 }
 
-function handleFile(event) {
-  archivoDestinatarios.value = event.target.files[0]
+function addMensaje() {
+  form.value.mensajes.push({ mensaje: "", tipo_mensaje: "texto", url_archivo: "" });
 }
 
-function closeModalCrear() {
-  openModalCrear.value = false
-  formCampania.value = {
-    nombre: '',
-    descripcion: '',
-    mensajes: [{mensaje:'',tipo_mensaje:'texto'}],
-    numeros_manual: [],
+function addDestinatarioManual() {
+  form.value.destinatarios_manual.push({ codigo_pais: "", numero: "", nombre: "" });
+}
+
+function handleFile(e) {
+  archivoExcel.value = e.target.files[0];
+}
+
+function cerrarModalCrear() {
+  openModalCrear.value = false;
+  form.value = {
+    nombre: "",
+    descripcion: "",
+    mensajes: [{ mensaje: "", tipo_mensaje: "texto", url_archivo: "" }],
+    destinatarios_manual: [],
     usar_retraso_mensaje: false,
     retraso_mensaje_min: null,
-    retraso_mensaje_max: null
-  }
-  archivoDestinatarios.value = null
+    retraso_mensaje_max: null,
+  };
+  archivoExcel.value = null;
 }
 
 async function crearCampania() {
-  try {
-    const formData = new FormData()
+  const fd = new FormData();
 
-    // Datos básicos
-    formData.append('nombre', formCampania.value.nombre)
-    formData.append('descripcion', formCampania.value.descripcion)
+  fd.append("nombre", form.value.nombre);
+  fd.append("descripcion", form.value.descripcion);
 
-    // Mensajes
-    formCampania.value.mensajes.forEach((m, i) => {
-      formData.append(`mensajes[${i}][mensaje]`, m.mensaje)
-      formData.append(`mensajes[${i}][tipo_mensaje]`, m.tipo_mensaje)
-      if (m.url_archivo) formData.append(`mensajes[${i}][url_archivo]`, m.url_archivo)
-    })
+  form.value.mensajes.forEach((m, i) => {
+    fd.append(`mensajes[${i}][mensaje]`, m.mensaje);
+    fd.append(`mensajes[${i}][tipo_mensaje]`, m.tipo_mensaje);
+    if (m.url_archivo) fd.append(`mensajes[${i}][url_archivo]`, m.url_archivo);
+  });
 
-    // Archivo destinatarios
-    if (archivoDestinatarios.value) {
-      formData.append('archivo_destinatarios', archivoDestinatarios.value)
-    }
+  form.value.destinatarios_manual.forEach((d, i) => {
+    fd.append(`destinatarios_manual[${i}][codigo_pais]`, d.codigo_pais);
+    fd.append(`destinatarios_manual[${i}][numero]`, d.numero);
+    fd.append(`destinatarios_manual[${i}][nombre]`, d.nombre);
+  });
 
-    // Números manuales
-    formCampania.value.numeros_manual.forEach((n, i) => {
-      if (n.trim()) formData.append(`numeros_manual[${i}]`, n.trim())
-    })
+  if (archivoExcel.value) fd.append("archivo_destinatarios", archivoExcel.value);
 
-    // Retraso entre mensajes (solo si está activado)
-    formData.append('usar_retraso_mensaje', formCampania.value.usar_retraso_mensaje ? 1 : 0)
-    if (formCampania.value.usar_retraso_mensaje) {
-      if (formCampania.value.retraso_mensaje_min != null)
-        formData.append('retraso_mensaje_min', formCampania.value.retraso_mensaje_min)
-      if (formCampania.value.retraso_mensaje_max != null)
-        formData.append('retraso_mensaje_max', formCampania.value.retraso_mensaje_max)
-    }
-
-    // Enviar request
-    await axios.post('/campania', formData, { headers: { 'Content-Type':'multipart/form-data' } })
-
-    // Limpiar formulario y recargar campañas
-    closeModalCrear()
-    fetchCampanias()
-  } catch (err) {
-    console.error(err)
-    if (err.response && err.response.status === 422) {
-      const errores = err.response.data.errors
-      console.error('Errores de validación:', errores)
-      alert('Error de validación. Revisa los campos obligatorios.')
-    } else {
-      alert('Error al crear la campaña')
-    }
+  fd.append("usar_retraso_mensaje", form.value.usar_retraso_mensaje ? 1 : 0);
+  if (form.value.usar_retraso_mensaje) {
+    fd.append("retraso_mensaje_min", form.value.retraso_mensaje_min ?? "");
+    fd.append("retraso_mensaje_max", form.value.retraso_mensaje_max ?? "");
   }
+
+  await axios.post("/campania", fd);
+  cerrarModalCrear();
+  fetchCampanias();
 }
 
-
-function iniciarCampaniaModal(c) {
-  campañaActual.value = c
-  formIniciar.value.sesiones = []
-  fetchSesionesDisponibles()
-  openModalIniciar.value = true
+async function iniciarCampaniaModal(c) {
+  campaniaActual.value = c;
+  formIniciar.sesiones = [];
+  await fetchSesiones();
+  openModalIniciar.value = true;
 }
 
-function closeModalIniciar() {
-  openModalIniciar.value = false
-  campañaActual.value = null
-  formIniciar.value = { sesiones: [] }
+function cerrarModalIniciar() {
+  openModalIniciar.value = false;
+  formIniciar.sesiones = [];
 }
 
-// 🔹 Fetch sesiones disponibles
-async function fetchSesionesDisponibles() {
-  try {
-    const res = await axios.get('/waha/sesiones/disponibles')
-    sesionesDisponibles.value = res.data.data
-  } catch (err) {
-    console.error(err)
-    sesionesDisponibles.value = []
-  }
+async function fetchSesiones() {
+  const res = await axios.get("/waha/sesiones/disponibles");
+  sesiones.value = res.data.data;
 }
 
-// 🔹 Iniciar campaña
 async function iniciarCampania() {
-  if (formIniciar.value.sesiones.length === 0) {
-    alert('Selecciona al menos una sesión.')
-    return
+  if (!formIniciar.sesiones.length) {
+    alert("Selecciona al menos una sesión");
+    return;
   }
+
   try {
-    await axios.post(`/campania/${campañaActual.value.id}/iniciar`, formIniciar.value)
-    alert('Campaña iniciada correctamente')
-    closeModalIniciar()
-    fetchCampanias()
-  } catch (err) {
-    console.error(err)
-    alert('Error al iniciar la campaña')
+    await axios.post(`/campania/${campaniaActual.value.id}/iniciar`, {
+      sesiones: formIniciar.sesiones
+    });
+
+    cerrarModalIniciar();
+    fetchCampanias();
+  } catch (error) {
+    console.error("Error al iniciar campaña:", error.response?.data || error);
+    alert("Hubo un error al iniciar la campaña. Revisa la consola.");
+  }
+}
+
+async function procesarCampania(c) {
+  if (!confirm(`¿Enviar todos los mensajes de la campaña "${c.nombre}"?`)) return;
+
+  try {
+    await axios.post(`/campania/${c.id}/enviar`);
+    alert("Campaña procesada correctamente");
+    fetchCampanias();
+  } catch (error) {
+    console.error("Error al procesar campaña:", error.response?.data || error);
+    alert("Hubo un error al enviar la campaña. Revisa la consola.");
   }
 }
 
 async function eliminarCampania(id) {
-  if (!confirm('¿Eliminar esta campaña?')) return
-  try {
-    await axios.delete(`/campania/${id}`)
-    fetchCampanias()
-  } catch (err) {
-    console.error(err)
-    alert('Error al eliminar la campaña')
-  }
+  if (!confirm("¿Seguro de eliminar?")) return;
+  await axios.delete(`/campania/${id}`);
+  fetchCampanias();
 }
 
-onMounted(() => {
-  fetchCampanias()
-})
+onMounted(fetchCampanias);
 </script>
 
 <style scoped>
-/* Opcional */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0007;
+  z-index: 50;
+}
+
+.modal-box {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.label {
+  display: block;
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.input {
+  border: 1px solid #ccc;
+  padding: 6px;
+  border-radius: 5px;
+}
+
+.btn-blue {
+  background: #2563eb;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+
+.btn-yellow {
+  background: #eab308;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+
+.btn-gray {
+  background: #d1d5db;
+  padding: 6px 10px;
+  border-radius: 4px;
+}
+
+.btn-red {
+  background: #dc2626;
+  color: white;
+  padding: 6px 10px;
+  border-radius: 4px;
+}
 </style>

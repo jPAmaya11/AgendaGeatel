@@ -13,10 +13,8 @@ class LogRespuestaCliente extends Model
 
     protected $fillable = [
         'campania_id',
+        'codigo_pais_cliente',
         'numero_cliente',
-        'numero_bot',
-        'tipo_wsp_cliente',
-        'formato_mensaje',
         'mensaje',
         'fecha_registro'
     ];

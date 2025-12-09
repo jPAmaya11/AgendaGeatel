@@ -14,6 +14,7 @@ class User extends Authenticatable
     protected $fillable = [
         'name',
         'email',
+        'phone',
         'password',
         'active',
     ];
@@ -25,6 +26,7 @@ class User extends Authenticatable
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'google_token_expires_at'=> 'datetime',
         'password' => 'hashed',
         'active' => 'boolean',
     ];
@@ -34,15 +36,13 @@ class User extends Authenticatable
      * -------------------------------------------------*/
     public function reportes()
     {
-        return $this
-            ->belongsToMany(Reporte::class, 'reporte_user')
+        return $this->belongsToMany(Reporte::class, 'reporte_user')
             ->with('cartera');
     }
 
     public function carteras()
     {
-        return $this
-            ->belongsToMany(Cartera::class, 'cartera_user');
+        return $this->belongsToMany(Cartera::class, 'cartera_user');
     }
 
     public function getEffectiveCarteras()
@@ -66,35 +66,37 @@ class User extends Authenticatable
      * Relaciones del módulo de Mensajería Masiva
      * -------------------------------------------------*/
 
-    // Un usuario puede crear muchas campañas
+    // Campañas creadas por el usuario
     public function campanias()
     {
         return $this->hasMany(Campania::class);
     }
 
-    // Un usuario puede tener acceso a varias sesiones WAHA
-    public function wahaSesiones()
+    // 🔹 Acceso a conexiones WAHA (desde tabla conexion_usuario_filtros)
+    public function wahaConexiones()
     {
-        return $this->belongsToMany(WahaSesion::class, 'waha_sesion_user')
-            ->withPivot(['permitido', 'asignado_en'])
-            ->wherePivot('permitido', true);
+        return $this->belongsToMany(
+            WahaConexion::class,
+            'conexion_usuario_filtros',
+            'user_id',
+            'waha_conexion_id'
+        )->withPivot('filtro')
+         ->withTimestamps();
     }
-
-
-    // Logs de envíos (según las campañas creadas)
+    // Logs de envíos (según campañas creadas)
     public function logEnvios()
     {
         return $this->hasManyThrough(
             LogEnvioMensajeria::class,
             Campania::class,
-            'user_id', // Clave foránea en campañas
-            'campania_id', // Clave foránea en logs
-            'id', // Clave local en users
-            'id'  // Clave local en campañas
+            'user_id',
+            'campania_id',
+            'id',
+            'id'
         );
     }
 
-    //  Logs de respuestas (de clientes que responden)
+    // Logs de respuestas de clientes
     public function logRespuestas()
     {
         return $this->hasManyThrough(
@@ -118,5 +120,10 @@ class User extends Authenticatable
     public function scopeInactivos($query)
     {
         return $query->where('active', false);
+    }
+
+    public function events()
+    {
+        return $this->hasMany(Event::class);
     }
 }

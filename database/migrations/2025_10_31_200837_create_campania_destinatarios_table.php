@@ -11,11 +11,12 @@ return new class extends Migration
         Schema::create('campania_destinatarios', function (Blueprint $table) {
             $table->id();
             $table->foreignId('campania_id')->constrained('campanias')->cascadeOnDelete();
-            $table->string('codigo_pais', 10)->nullable();
-            $table->string('nombre')->nullable();
-            $table->string('numero');
+
+            $table->string('nombre')->nullable(); // opcional
+            $table->string('codigo_pais', 5); // obligatorio
+            $table->string('numero'); // obligatorio
             $table->json('variables_json')->nullable();
-            $table->enum('estado_envio', ['pendiente', 'enviado', 'entregado', 'leido', 'error'])->default('pendiente');
+            $table->enum('estado_envio', ['pendiente', 'enviado', 'error'])->default('pendiente');
             $table->timestamps();
 
             $table->index(['campania_id', 'estado_envio']);
