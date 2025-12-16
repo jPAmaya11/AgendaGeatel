@@ -30,6 +30,11 @@ use App\Http\Controllers\CampaniaController;
 use App\Http\Controllers\EventController;
 use App\Http\Controllers\GoogleCalendarController;
 
+use App\Http\Controllers\NoteController;
+use App\Http\Controllers\NotebookController;
+use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\NoteShareController;
+
 // ===================
 // RUTA INICIAL
 // ===================
@@ -115,8 +120,35 @@ Route::middleware('auth')->group(function () {
     // ===================
     Route::middleware(['auth'])->group(function () {
     Route::get('/google/redirect', [GoogleCalendarController::class, 'redirect'])->name('google.redirect');
-    Route::get('/google/callback', [GoogleCalendarController::class, 'callback'])->name('google.callback');
-});
+    Route::get('/google/callback', [GoogleCalendarController::class, 'callback'])->name('google.callback');});
+
+    // ===================
+    // NOTAS
+    // ===================
+    // Módulo de Notas
+    Route::get('/notes', [NoteController::class, 'index'])->name('notes.index');
+    Route::post('/notes', [NoteController::class, 'store'])->name('notes.store');
+    Route::put('/notes/{note}', [NoteController::class, 'update'])->name('notes.update');
+    Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
+    // Fathom
+    Route::post('/notes/{note}/import-fathom', [NoteController::class, 'importFathom'])->name('notes.import-fathom');
+
+    // IA
+    Route::post('/notes/{note}/ai-format', [NoteController::class, 'aiFormat'])->name('notes.ai-format');
+
+    // Compartir nota
+    Route::get('/notes/{note}/collaborators', [NoteShareController::class, 'index'])->name('notes.collaborators');
+    Route::post('/notes/{note}/share', [NoteShareController::class, 'store'])->name('notes.share');
+    Route::delete('/notes/{note}/unshare/{user}', [NoteShareController::class, 'destroy'])->name('notes.unshare');
+
+    // Libretas
+    Route::post('/notebooks', [NotebookController::class, 'store'])->name('notebooks.store');
+    Route::put('/notebooks/{notebook}', [NotebookController::class, 'update'])->name('notebooks.update');
+    Route::delete('/notebooks/{notebook}', [NotebookController::class, 'destroy'])->name('notebooks.destroy');
+
+    // Categorías
+    Route::post('/categories', [CategoryController::class, 'store'])->name('categories.store');
+    Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])->name('categories.destroy');
 
 });
 

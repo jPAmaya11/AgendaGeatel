@@ -126,4 +126,11 @@ class User extends Authenticatable
     {
         return $this->hasMany(Event::class);
     }
+
+    public function sharedNotes()
+    {
+        return $this->belongsToMany(Note::class, 'note_shares')
+            ->withPivot('can_edit')
+            ->withTimestamps();
+    }
 }

@@ -178,7 +178,7 @@ const destroyEvent = (id) => {
 
       <!-- Botón para conectar con Calendaer -->
       <a :href="route('google.redirect')"
-        class="inline-flex items-center px-3 py-2 rounded-md text-sm font-semibold bg-green-600 text-white hover:bg-green-700">
+        class="inline-flex items-center px-3 py-2 rounded-md text-sm font-semibold bg-green-600 text-white hover:bg-green-700 mb-4">
         Conectar con Google Calendar
       </a>
 

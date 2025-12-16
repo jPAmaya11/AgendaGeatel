@@ -105,9 +105,9 @@ onMounted(() => {
             <!-- Logo -->
             <div class="flex items-center justify-center p-4 border-b h-16">
                 <Link :href="route('dashboard')" class="flex items-center">
-                <ApplicationLogo v-if="isSidebarOpen" :variant="'white'" class="block h-9 w-auto" />
+                    <ApplicationLogo v-if="isSidebarOpen" :variant="'white'" class="block h-9 w-auto" />
 
-                <ApplicationLogoMini v-else class="block h-9 w-auto text-white" />
+                    <ApplicationLogoMini v-else class="block h-9 w-auto text-white" />
                 </Link>
             </div>
 
@@ -131,7 +131,7 @@ onMounted(() => {
                 <div class="separador separadorAdmin" v-if="canDo('carteras.ver')"></div>
                 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded" rel="stylesheet" />
 
-                
+
                 <NavLink v-if="canDo('reportes.ver')" :href="route('reportes.index')"
                     :active="route().current('reportes.index')"
                     class="w-full flex items-center px-3 py-3 hover:bg-white/10 transition group relative"
@@ -194,6 +194,24 @@ onMounted(() => {
                     </transition>
                     <DataTool :label="'Agenda / Calendario'" :show="!isSidebarOpen" />
                 </NavLink>
+
+                <!-- Enlace a Notas (módulo tipo Evernote) -->
+                <NavLink :href="route('notes.index')" :active="route().current('notes.*')"
+                    class="w-full flex items-center px-3 py-3 hover:bg-white/10 transition group relative"
+                    :class="isSidebarOpen ? 'justify-start' : 'justify-center'">
+                    <svg class="w-6 h-6 text-white flex-shrink-0" style="width: 26px; height: 26px; color: #fff"
+                        xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
+                        <path
+                            d="M7 3a2 2 0 0 0-2 2v14a1 1 0 0 0 1.447.894L9 19.382l2.553.512A1 1 0 0 0 12 20h5a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H7zm0 2h10v11h-4.382l-2.553-.512a1 1 0 0 0-.63.085L8 16.618V5z" />
+                    </svg>
+                    <transition name="fade-slide">
+                        <span v-if="isSidebarOpen" class="ml-3 text-sm text-white whitespace-nowrap">
+                            Notas </span>
+                    </transition>
+                    <DataTool :label="'Notas'" :show="!isSidebarOpen" />
+                </NavLink>
+
+
             </nav>
         </aside>
 
@@ -268,7 +286,7 @@ onMounted(() => {
                                                 {{ $page.props.auth.user.name }}
                                                 <span class="rollBar">{{
                                                     $page.props.auth.role
-                                                }}</span>
+                                                    }}</span>
                                             </div>
                                         </div>
                                         <!-- Flecha caret -->
