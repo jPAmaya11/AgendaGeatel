@@ -131,7 +131,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/notes/{note}', [NoteController::class, 'update'])->name('notes.update');
     Route::delete('/notes/{note}', [NoteController::class, 'destroy'])->name('notes.destroy');
     // Fathom
-    Route::post('/notes/{note}/import-fathom', [NoteController::class, 'importFathom'])->name('notes.import-fathom');
+    Route::post('/notes/fathom/import', [NoteController::class, 'importFromFathom'])->name('notes.fathom.import');
 
     // IA
     Route::post('/notes/{note}/ai-format', [NoteController::class, 'aiFormat'])->name('notes.ai-format');

@@ -156,72 +156,90 @@ const destroyEvent = (id) => {
 
 <template>
   <AuthenticatedLayout>
-    <div class="w-full max-w-3xl mx-auto p-4 sm:p-6">
-      <!-- Título -->
-      <h1 class="text-2xl font-bold mb-4 tituloPag text-center">
-        Agenda de eventos
-      </h1>
+    <div class="container mx-auto px-6 py-8 max-w-6xl">
 
-      <!-- Mensaje de éxito -->
-      <div v-if="flashSuccess" class="mb-4 rounded-lg bg-green-100 text-green-800 px-4 py-2 text-sm">
-        {{ flashSuccess }}
-      </div>
+      <!-- CABECERA -->
+      <div class="flex items-center justify-between mb-8">
+        <div class="flex items-center gap-3">
+          <div class="bg-gray-800 text-white p-2 rounded">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+              stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7V3m8 4V3M3 11h18M5 21h14a2 2 0 002-2V7H3v12a2 2 0 002 2z" />
+            </svg>
+          </div>
+          <h1 class="text-2xl font-bold tituloPag">
+            Agenda de Eventos
+          </h1>
+        </div>
 
-      <!-- Botón crear -->
-      <div class="flex justify-end mb-4">
-        <button type="button"
-          class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold shadow hover:bg-blue-700 active:scale-95 transition"
-          @click="openCreateForm">
-          + Nuevo evento
+        <button @click="openCreateForm"
+          class="bgPrincipal text-white px-5 py-2 rounded text-sm shadow hover:opacity-90 transition flex items-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+          </svg>
+          Nuevo evento
         </button>
       </div>
 
-      <!-- Botón para conectar con Calendaer -->
-      <a :href="route('google.redirect')"
-        class="inline-flex items-center px-3 py-2 rounded-md text-sm font-semibold bg-green-600 text-white hover:bg-green-700 mb-4">
-        Conectar con Google Calendar
-      </a>
+      <!-- FLASH -->
+      <div v-if="flashSuccess" class="bg-green-100 text-green-700 p-3 rounded mb-6">
+        {{ flashSuccess }}
+      </div>
 
+      <!-- GOOGLE CALENDAR -->
+      <div class="mb-8">
+        <a :href="route('google.redirect')"
+          class="inline-flex items-center gap-2 px-5 py-2 rounded bg-sky-500 text-white text-sm shadow hover:bg-sky-600 transition">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3M3 11h18" />
+          </svg>
+          Conectar con Google Calendar
+        </a>
+      </div>
 
-      <!-- Formulario -->
-      <div v-if="showForm" class="mb-6 rounded-2xl bg-white shadow p-4 sm:p-5 border border-gray-100">
-        <div class="flex items-center justify-between mb-3">
-          <h2 class="font-semibold text-lg">
+      <!-- FORMULARIO -->
+      <div v-if="showForm" class="mb-10 bg-white rounded shadow border border-gray-100 p-6">
+        <div class="flex items-center justify-between mb-5 pb-3 border-b">
+          <h2 class="text-lg font-semibold">
             {{ formMode === 'create' ? 'Crear evento' : 'Editar evento' }}
           </h2>
-          <button type="button" class="text-xs text-gray-500 hover:text-gray-700" @click="closeForm">
-            Cerrar ✕
+          <button @click="closeForm" class="text-gray-500 hover:text-gray-700 text-sm">
+            ✕
           </button>
         </div>
 
-        <form @submit.prevent="submitForm" class="space-y-3 text-sm">
+        <form @submit.prevent="submitForm" class="space-y-5 text-sm">
+
+          <!-- TITULO -->
           <div>
             <label class="block font-semibold mb-1">Título *</label>
-            <input v-model="form.title" type="text"
-              class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" required />
+            <input v-model="form.title" type="text" required
+              class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-indigo-400" />
           </div>
 
+          <!-- DESCRIPCION -->
           <div>
             <label class="block font-semibold mb-1">Descripción</label>
             <textarea v-model="form.description" rows="3"
-              class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"></textarea>
+              class="w-full border rounded px-3 py-2 focus:ring-2 focus:ring-indigo-400"></textarea>
           </div>
 
-          <div class="grid grid-cols-2 gap-3">
+          <!-- TIPO / ESTADO -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block font-semibold mb-1">Tipo *</label>
-              <select v-model="form.type"
-                class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200">
+              <select v-model="form.type" class="w-full border rounded px-3 py-2 bg-white">
                 <option value="meeting">Reunión</option>
                 <option value="task">Pendiente</option>
                 <option value="personal">Personal</option>
                 <option value="other">Otro</option>
               </select>
             </div>
+
             <div>
               <label class="block font-semibold mb-1">Estado *</label>
-              <select v-model="form.status"
-                class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200">
+              <select v-model="form.status" class="w-full border rounded px-3 py-2 bg-white">
                 <option value="pending">Pendiente</option>
                 <option value="done">Completado</option>
                 <option value="cancelled">Cancelado</option>
@@ -229,147 +247,124 @@ const destroyEvent = (id) => {
             </div>
           </div>
 
+          <!-- LUGAR -->
           <div>
             <label class="block font-semibold mb-1">Lugar</label>
-            <input v-model="form.location" type="text"
-              class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200"
-              placeholder="Ej: Aula 301, Google Meet..." />
+            <input v-model="form.location" type="text" placeholder="Ej: Aula 301, Google Meet..."
+              class="w-full border rounded px-3 py-2" />
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- FECHAS -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="block font-semibold mb-1">Inicio *</label>
-              <input v-model="form.start_at" type="datetime-local"
-                class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" required />
+              <input v-model="form.start_at" type="datetime-local" required class="w-full border rounded px-3 py-2" />
             </div>
             <div>
               <label class="block font-semibold mb-1">Fin</label>
-              <input v-model="form.end_at" type="datetime-local"
-                class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" />
+              <input v-model="form.end_at" type="datetime-local" class="w-full border rounded px-3 py-2" />
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-
-            <!-- Recordatorio: Tipo -->
+          <!-- RECORDATORIO -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label class="block font-semibold mb-1">Tipo de Recordatorio</label>
-              <select v-model="form.reminder_type"
-                class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200">
-                <option value="exact">Fecha y hora exacta</option>
+              <label class="block font-semibold mb-1">Tipo de recordatorio</label>
+              <select v-model="form.reminder_type" class="w-full border rounded px-3 py-2 bg-white">
+                <option value="exact">Fecha exacta</option>
                 <option value="before">Antes del evento</option>
-                <option value="recurrent">Recordatorio recurrente</option>
+                <option value="recurrent">Recurrente</option>
               </select>
             </div>
 
-            <!-- Exact -->
-            <div v-if="form.reminder_type === 'exact'">
-              <label class="block font-semibold mb-1 mt-2">Recordatorio en fecha/hora específica</label>
-              <input v-model="form.reminder_at" type="datetime-local"
-                class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" />
-            </div>
-
-            <!-- Before -->
-            <div v-else-if="form.reminder_type === 'before'" class="grid grid-cols-2 gap-3 mt-2">
-              <div>
-                <label class="block font-semibold mb-1">Recordar</label>
-                <input v-model.number="form.reminder_interval" type="number" min="1"
-                  class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" />
-              </div>
-              <div>
-                <label class="block font-semibold mb-1">Unidad</label>
-                <select v-model="form.reminder_unit"
-                  class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200">
-                  <option value="minutes">Minutos antes</option>
-                  <option value="hours">Horas antes</option>
-                </select>
-              </div>
-            </div>
-
-            <!-- Recurrent -->
-            <div v-else-if="form.reminder_type === 'recurrent'" class="space-y-2 mt-2">
-              <div>
-                <label class="block font-semibold mb-1">Inicio de los recordatorios</label>
-                <input v-model="form.reminder_start_at" type="datetime-local"
-                  class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" />
-              </div>
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="block font-semibold mb-1">Cada</label>
-                  <input v-model.number="form.reminder_interval" type="number" min="1"
-                    class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200" />
-                </div>
-                <div>
-                  <label class="block font-semibold mb-1">Unidad</label>
-                  <select v-model="form.reminder_unit"
-                    class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200">
-                    <option value="minutes">Minutos</option>
-                    <option value="hours">Horas</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <!-- Recordatorio: Tipo -->
             <div>
-              <label class="block font-semibold mb-1">Tipo de Recordatorio</label>
-              <select v-model="form.reminder_channel"
-                class="w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring focus:ring-blue-200">
+              <label class="block font-semibold mb-1">Canal</label>
+              <select v-model="form.reminder_channel" class="w-full border rounded px-3 py-2 bg-white">
                 <option value="whatsapp">WhatsApp</option>
-                <option value="email">Correo (Gmail)</option>
-                <option value="both">WhatsApp y Correo</option>
+                <option value="email">Correo</option>
+                <option value="both">Ambos</option>
               </select>
             </div>
           </div>
 
-          <div class="pt-2 flex gap-2 justify-end">
-            <button type="button" class="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 text-sm"
-              @click="closeForm">
+          <!-- EXACT -->
+          <div v-if="form.reminder_type === 'exact'">
+            <label class="block font-semibold mb-1">Fecha del recordatorio</label>
+            <input v-model="form.reminder_at" type="datetime-local" class="w-full border rounded px-3 py-2" />
+          </div>
+
+          <!-- BEFORE -->
+          <div v-else-if="form.reminder_type === 'before'" class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block font-semibold mb-1">Cantidad</label>
+              <input v-model.number="form.reminder_interval" type="number" min="1"
+                class="w-full border rounded px-3 py-2" />
+            </div>
+            <div>
+              <label class="block font-semibold mb-1">Unidad</label>
+              <select v-model="form.reminder_unit" class="w-full border rounded px-3 py-2 bg-white">
+                <option value="minutes">Minutos</option>
+                <option value="hours">Horas</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- RECURRENT -->
+          <div v-else-if="form.reminder_type === 'recurrent'" class="space-y-4">
+            <div>
+              <label class="block font-semibold mb-1">Inicio</label>
+              <input v-model="form.reminder_start_at" type="datetime-local" class="w-full border rounded px-3 py-2" />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <input v-model.number="form.reminder_interval" type="number" min="1" class="border rounded px-3 py-2" />
+              <select v-model="form.reminder_unit" class="border rounded px-3 py-2 bg-white">
+                <option value="minutes">Minutos</option>
+                <option value="hours">Horas</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- BOTONES -->
+          <div class="flex justify-end gap-3 pt-4 border-t">
+            <button type="button" @click="closeForm" class="px-5 py-2 border rounded text-gray-700">
               Cancelar
             </button>
-            <button type="submit"
-              class="px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold shadow hover:bg-blue-700 active:scale-95 transition">
+            <button type="submit" class="bgPrincipal text-white px-6 py-2 rounded shadow hover:opacity-90">
               {{ formMode === 'create' ? 'Guardar' : 'Actualizar' }}
             </button>
           </div>
         </form>
       </div>
 
-      <!-- Lista tipo agenda (calendario) -->
+      <!-- LISTA -->
       <div class="space-y-4">
-        <div v-if="eventsByDate.length === 0" class="text-center text-gray-500 text-sm mt-8">
+        <div v-if="eventsByDate.length === 0" class="text-center text-gray-500 py-10">
           No tienes eventos registrados aún.
         </div>
 
-        <div v-for="group in eventsByDate" :key="group.date"
-          class="rounded-2xl bg-white shadow border border-gray-100 overflow-hidden">
-          <div class="bg-gray-100 px-4 py-2 text-xs font-semibold text-gray-700">
+        <div v-for="group in eventsByDate" :key="group.date" class="bg-white rounded shadow border overflow-hidden">
+          <div class="bg-gray-100 px-4 py-2 font-semibold text-sm">
             {{ group.date }}
           </div>
-          <div class="divide-y divide-gray-100">
-            <div v-for="event in group.events" :key="event.id" class="px-4 py-3 flex items-start justify-between">
-              <div class="flex-1">
-                <div class="text-xs text-gray-500 mt-0.5">
-                  <span v-if="event.start_at">
-                    {{ formatDateTime(event.start_at) }}
-                  </span>
+
+          <div class="divide-y">
+            <div v-for="event in group.events" :key="event.id" class="px-4 py-3 flex justify-between hover:bg-gray-50">
+              <div>
+                <h3 class="font-semibold">{{ event.title }}</h3>
+                <div class="text-xs text-gray-500">
+                  {{ formatDateTime(event.start_at) }}
                   <span v-if="event.end_at"> → {{ formatDateTime(event.end_at) }}</span>
                 </div>
-                <div v-if="event.location" class="text-xs text-gray-500 mt-0.5">
-                  📍 {{ event.location }}
-                </div>
-                <div class="text-[11px] text-gray-400 mt-0.5">
-                  Tipo: {{ event.type }} · Estado: {{ event.status }}
+                <div class="text-xs text-gray-400">
+                  {{ event.type }} · {{ event.status }}
                 </div>
               </div>
-              <div class="flex flex-col gap-1 ml-2">
-                <button type="button"
-                  class="text-xs px-2 py-1 rounded bg-yellow-100 text-yellow-800 hover:bg-yellow-200"
-                  @click="openEditForm(event)">
+
+              <div class="flex flex-col gap-1">
+                <button @click="openEditForm(event)" class="text-xs px-3 py-1 rounded bg-yellow-100 text-yellow-800">
                   Editar
                 </button>
-                <button type="button" class="text-xs px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200"
-                  @click="destroyEvent(event.id)">
+                <button @click="destroyEvent(event.id)" class="text-xs px-3 py-1 rounded bg-red-100 text-red-700">
                   Eliminar
                 </button>
               </div>
@@ -377,6 +372,7 @@ const destroyEvent = (id) => {
           </div>
         </div>
       </div>
+
     </div>
   </AuthenticatedLayout>
 </template>

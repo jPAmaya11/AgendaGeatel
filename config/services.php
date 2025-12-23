@@ -54,4 +54,8 @@ return [
     'redirect'      => env('GOOGLE_REDIRECT_URI'),
     ],
 
+    'fathom' => [
+    'key'  => env('FATHOM_API_KEY'),
+    'base' => env('FATHOM_API_BASE'),
+],
 ];

@@ -235,26 +235,51 @@ const removeCollaborator = async (userId) => {
 watch(selectedNote, () => { loadCollaborators() })
 
 // IMPORTAR NOTA DE FATHOM
+const fathomUrl = ref('')
 const importingFathom = ref(false)
+const importFromFathom = async () => {
+  if (!fathomUrl.value.trim()) {
+    alert('Pega el link de Fathom')
+    return
+  }
 
-const importFathomSummary = () => {
-  if (!selectedNote.value?.fathom_url) {
-    alert('Pega un link de Fathom primero')
+  if (!editableNote.value || !canEditSelected.value) {
+    alert('No puedes editar esta nota')
     return
   }
 
   importingFathom.value = true
 
-  router.post(
-    route('notes.import-fathom', selectedNote.value.id),
-    { fathom_url: selectedNote.value.fathom_url },
-    {
-      preserveScroll: true,
-      onFinish: () => {
-        importingFathom.value = false
-      }
+  try {
+    const res = await axios.post(
+      route('notes.fathom.import'),
+      { url: fathomUrl.value }
+    )
+
+    const summary = res.data?.summary
+
+    if (!summary) {
+      alert('No se pudo importar el resumen')
+      return
     }
-  )
+
+    // 🔥 INSERTA TEXTO LIMPIO EN LA NOTA
+    editableNote.value.content =
+      (editableNote.value.content?.trim()
+        ? editableNote.value.content + '\n\n'
+        : '') +
+      summary
+
+    fathomUrl.value = ''
+
+  } catch (e) {
+    alert(
+      e.response?.data?.error ||
+      'Error al importar desde Fathom'
+    )
+  } finally {
+    importingFathom.value = false
+  }
 }
 </script>
 
@@ -265,9 +290,22 @@ const importFathomSummary = () => {
     <div class="container mx-auto p-6">
       <!-- Cabecera -->
       <div class="flex items-center justify-between mb-6">
-        <h1 class="text-2xl font-bold tituloPag">
-          Notas
-        </h1>
+        <div>
+          <div class="flex items-center gap-3">
+            <div class="bg-gray-800 text-white p-2 rounded">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-2xl font-bold tituloPag">Sistema de Notas</h1>
+
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Mensajes -->
@@ -284,24 +322,39 @@ const importFathomSummary = () => {
         <!-- Columna izquierda: categorías -->
         <div class="col-span-12 md:col-span-3">
           <div class="bg-white rounded shadow p-4">
-            <h2 class="text-sm font-semibold text-gray-700 mb-2">
-              Categorías
+            <h2 class="text-sm font-semibold text-gray-700 mb-3">
+              CATEGORÍAS
             </h2>
 
             <!-- Filtro de categorías -->
             <ul class="space-y-1 mb-4">
               <li v-for="cat in categoryFilters" :key="cat">
-                <button class="w-full flex justify-between items-center px-3 py-1.5 rounded text-sm transition" :class="activeCategory === cat
+                <button class="w-full flex items-center gap-2 px-3 py-2 rounded text-sm transition" :class="activeCategory === cat
                   ? 'bgPrincipal text-white'
                   : 'text-gray-700 hover:bg-gray-100'" @click="activeCategory = cat">
-                  <span>{{ cat }}</span>
+                  <svg v-if="cat === 'Todas'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <svg v-else-if="cat === 'Reuniones'" xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none"
+                    viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                  </svg>
+                  <span>{{ cat === 'Todas' ? 'Todas las notas' : cat }}</span>
                 </button>
               </li>
             </ul>
 
             <!-- Gestión de categorías reales -->
-            <h3 class="text-xs font-semibold text-gray-500 mb-2">
-              Administrar categorías
+            <h3 class="text-xs font-semibold text-gray-500 mb-2 mt-6">
+              ADMINISTRAR
             </h3>
 
             <div class="flex mb-2 gap-2">
@@ -323,54 +376,73 @@ const importFathomSummary = () => {
               </li>
             </ul>
 
-            <h3 class="text-xs font-semibold text-gray-500 mt-4 mb-1">
+            <h3 class="text-xs font-semibold text-gray-500 mt-6 mb-2">
               Estadísticas
             </h3>
-            <p class="text-xs text-gray-500">
-              Total de notas: <strong>{{ notes.length }}</strong>
-            </p>
+            <div class="text-center">
+              <p class="text-3xl font-bold text-gray-800">{{ notes.length }}</p>
+              <p class="text-xs text-gray-500">Notas totales</p>
+            </div>
           </div>
         </div>
 
         <!-- Columna central: lista de notas -->
         <div class="col-span-12 md:col-span-4">
           <div class="bg-white rounded shadow p-4 h-full flex flex-col">
-            <!-- Buscador -->
-            <div class="mb-3">
-              <input v-model="search" type="text" placeholder="Buscar notas..."
-                class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+            <!-- Buscador y botón Nueva nota -->
+            <div class="mb-3 flex gap-2">
+              <div class="flex-1 relative">
+                <svg xmlns="http://www.w3.org/2000/svg"
+                  class="h-4 w-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" fill="none"
+                  viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input v-model="search" type="text" placeholder="Buscar notas por título, contenido o etiqueta"
+                  class="w-full border border-gray-300 rounded pl-10 pr-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400">
+              </div>
+              <button @click="createNote"
+                class="bgPrincipal text-white px-4 py-2 rounded text-sm shadow hover:opacity-90 transition flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                  stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Nueva nota
+              </button>
             </div>
 
             <!-- Encabezado de lista -->
-            <div class="mb-3 flex justify-between items-center">
-              <span class="text-xs text-gray-500">
-                {{ filteredNotes.length }} nota(s) encontradas
+            <div class="mb-3">
+              <span class="text-sm text-gray-600 font-medium">
+                {{ filteredNotes.length }} notas encontradas
               </span>
-              <button @click="createNote"
-                class="bg-green-500 hover:bg-green-600 text-white px-3 py-1.5 rounded text-xs shadow">
-                + Nueva nota
-              </button>
             </div>
 
             <!-- Lista de notas -->
             <div class="flex-1 overflow-y-auto space-y-2">
               <div v-for="note in filteredNotes" :key="note.id" @click="selectedNoteId = note.id"
-                class="border rounded px-3 py-2 cursor-pointer transition" :class="selectedNoteId === note.id
+                class="border rounded-lg px-4 py-3 cursor-pointer transition" :class="selectedNoteId === note.id
                   ? 'border-indigo-500 bg-indigo-50'
                   : 'border-gray-200 hover:bg-gray-50'">
-                <div class="flex justify-between items-center mb-1">
-                  <h3 class="text-sm font-semibold text-gray-800 truncate">
+                <div class="flex justify-between items-start mb-2">
+                  <h3 class="text-sm font-semibold text-gray-800">
                     {{ note.title || 'Sin título' }}
                   </h3>
-                  <span v-if="note.category" class="text-xs px-2 py-0.5 rounded-full bgPrincipal text-white">
+                  <span v-if="note.category"
+                    class="text-xs px-2 py-0.5 rounded-full bgPrincipal text-white ml-2 flex-shrink-0">
                     {{ note.category }}
                   </span>
                 </div>
-                <p class="text-xs text-gray-500 truncate">
+                <div class="flex items-center gap-2 text-[11px] text-gray-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span>Actualizado hace {{ note.updated_at || '—' }}</span>
+                </div>
+                <p class="text-xs text-gray-600 mt-2 line-clamp-2">
                   {{ note.content || 'Sin contenido' }}
-                </p>
-                <p class="text-[11px] text-gray-400 mt-1">
-                  Actualizado: {{ note.updated_at || '—' }}
                 </p>
               </div>
 
@@ -385,94 +457,114 @@ const importFathomSummary = () => {
         <div class="col-span-12 md:col-span-5">
           <div class="bg-white rounded shadow p-4 h-full flex flex-col">
             <template v-if="selectedNote">
-              <div class="mb-3">
-                <input v-model="editableNote.title" type="text"
-                  class="w-full border border-gray-300 rounded px-3 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  placeholder="Título de la nota">
-              </div>
-
-              <!-- Fila categoría + ID + Botón IA -->
-              <div class="mb-3 flex items-center justify-between gap-3">
-                <!-- IZQUIERDA: categoría + ID -->
-                <div class="flex items-center gap-2">
-                  <select v-model="editableNote.category"
-                    class="w-44 border border-gray-300 rounded px-3 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400 bg-white">
-                    <option value="">Sin categoría</option>
-                    <option v-for="cat in categories" :key="cat.id" :value="cat.name">
-                      {{ cat.name }}
-                    </option>
-                  </select>
-
-                  <span class="text-[11px] text-gray-400">
-                    ID: {{ selectedNote.id }}
-                  </span>
-                </div>
-
-                <!-- DERECHA: botón Reordenar con IA -->
-                <button @click="improveNoteWithAI" :disabled="improvingWithAI || !selectedNote"
-                  class="flex items-center gap-1 bg-purple-500 bgPrincipal hover:bg-purple-600 disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs px-4 py-1.5 rounded-full shadow">
-                  <span class="material-icons text-sm" style="font-size:14px"></span>
-                  <span v-if="!improvingWithAI">Reordenar con IA</span>
-                  <span v-else>Procesando...</span>
+              <!-- Header Nota Seleccionada -->
+              <div class="flex items-center justify-between mb-4 pb-3 border-b">
+                <h2 class="text-lg font-semibold text-gray-800">Nota Seleccionada</h2>
+                <button class="text-gray-600 hover:text-gray-800">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
                 </button>
               </div>
 
+              <!-- Título de la nota -->
+              <div class="mb-4">
+                <label class="block text-xs font-semibold text-gray-600 mb-2">TÍTULO DE LA NOTA</label>
+                <input v-model="editableNote.title" type="text"
+                  class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                  placeholder="Título de la nota" :disabled="!canEditSelected">
+              </div>
+
+              <!-- Categoría -->
+              <div class="mb-4">
+                <label class="block text-xs font-semibold text-gray-600 mb-2">CATEGORÍA</label>
+                <select v-model="editableNote.category"
+                  class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-white">
+                  <option value="">Sin categoría</option>
+                  <option v-for="cat in categories" :key="cat.id" :value="cat.name">
+                    {{ cat.name }}
+                  </option>
+                </select>
+              </div>
+
+              <!-- ID de Nota + Reordenar con IA -->
+              <div class="mb-4">
+                <label class="block text-xs font-semibold text-gray-600 mb-2">ID DE NOTA</label>
+                <div class="flex items-center justify-between gap-3">
+                  <span class="text-sm text-gray-700">ID-{{ selectedNote.id }}</span>
+                  <button @click="improveNoteWithAI" :disabled="improvingWithAI || !selectedNote || !canEditSelected"
+                    class="flex items-center gap-1 bgPrincipal hover:opacity-90 disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs px-3 py-1.5 rounded shadow">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24"
+                      stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                    <span v-if="!improvingWithAI">Reordenar con IA</span>
+                    <span v-else>Procesando...</span>
+                  </button>
+                </div>
+              </div>
+
               <!-- Panel de colaboradores -->
-              <div v-if="selectedNote" class="mt-4 border-t pt-3">
-                <h3 class="text-xs font-semibold text-gray-600 mb-2">
-                  Colaboradores
+              <div class="mb-4">
+                <label class="block text-xs font-semibold text-gray-600 mb-2">
+                  COLABORADORES
                   <span v-if="selectedNote.shared_with_me"
                     class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px]">
                     Compartida conmigo
                   </span>
-                </h3>
+                </label>
 
                 <!-- Solo el dueño puede administrar colaboradores -->
-                <div v-if="selectedNote.is_owner">
-                  <div class="flex gap-2 mb-2">
+                <div v-if="selectedNote.is_owner" class="mb-2">
+                  <div class="mb-2">
                     <input type="email" v-model="shareEmail" placeholder="Correo del colaborador"
-                      class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400" />
-
-                    <label class="flex items-center gap-1 text-[11px] text-gray-600">
-                      <input type="checkbox" v-model="shareCanEdit" />
+                      class="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400" />
+                  </div>
+                  <div class="flex items-center justify-between gap-2">
+                    <label class="flex items-center gap-2 text-sm text-gray-600">
+                      <input type="checkbox" v-model="shareCanEdit" class="rounded" />
                       Puede editar
                     </label>
-
                     <button @click="addCollaborator"
-                      class="px-2 py-1 bgPrincipal text-white text-xs rounded hover:bg-blue-700 transition">
+                      class="px-4 py-2 bgPrincipal text-white text-sm rounded hover:opacity-90 transition">
                       Añadir
                     </button>
                   </div>
 
-                  <p v-if="shareError" class="text-[11px] text-red-500 mb-2">
+                  <p v-if="shareError" class="text-xs text-red-500 mb-2">
                     {{ shareError }}
                   </p>
                 </div>
 
                 <!-- Lista de colaboradores -->
-                <div class="bg-white border rounded p-2 max-h-40 overflow-y-auto">
-                  <p v-if="loadingCollaborators" class="text-[11px] text-gray-400">
+                <div class="bg-gray-50 border rounded p-3">
+                  <p v-if="loadingCollaborators" class="text-xs text-gray-400">
                     Cargando colaboradores...
                   </p>
 
-                  <p v-else-if="!collaborators.length" class="text-[11px] text-gray-400">
-                    No hay colaboradores en esta nota.
+                  <p v-else-if="!collaborators.length" class="text-xs text-gray-500">
+                    No hay colaboradores en esta nota
                   </p>
 
-                  <ul v-else class="space-y-1">
+                  <ul v-else class="space-y-2">
                     <li v-for="collab in collaborators" :key="collab.id"
-                      class="flex items-center justify-between text-[11px]">
+                      class="flex items-center justify-between text-xs">
                       <div class="flex flex-col">
                         <span class="font-medium text-gray-700">{{ collab.name || collab.email }}</span>
-                        <span class="text-gray-400">
-                          {{ collab.email }} ·
-                          <span v-if="collab.can_edit">Puede editar</span>
-                          <span v-else>Solo lectura</span>
+                        <span class="text-gray-400 text-[11px]">
+                          {{ collab.email }}
+                          <span v-if="collab.can_edit"> · Puede editar</span>
+                          <span v-else> · Solo lectura</span>
                         </span>
                       </div>
 
                       <button v-if="selectedNote.is_owner" @click="removeCollaborator(collab.id)"
-                        class="text-red-500 hover:text-red-700 text-[11px]">
+                        class="text-red-500 hover:text-red-700 text-xs">
                         Quitar
                       </button>
                     </li>
@@ -480,44 +572,52 @@ const importFathomSummary = () => {
                 </div>
               </div>
 
-              <div class="mt-4 border-t pt-3">
-                <h3 class="text-xs font-semibold text-gray-600 mb-2">
-                  Fathom – Resumen de reunión
-                </h3>
+              <!-- Fathom - Resumen de reunión -->
+              <div class="mb-4">
+                <label class="block text-xs font-semibold text-gray-600 mb-2">
+                  IMPORTAR DESDE FATHOM
+                </label>
 
                 <div class="flex gap-2">
-                  <input v-model="selectedNote.fathom_url" type="url" placeholder="Pega aquí el link de Fathom"
-                    class="flex-1 border border-gray-300 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                  <input v-model="fathomUrl" type="text" placeholder="https://fathom.video/share/..."
+                    class="flex-1 border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
                     :disabled="!canEditSelected" />
 
-                  <button @click="importFathomSummary" :disabled="!canEditSelected || importingFathom"
-                    class="bg-indigo-500 hover:bg-indigo-600 text-white text-xs px-3 py-1 rounded shadow disabled:opacity-60">
-                    <span v-if="!importingFathom">Importar</span>
-                    <span v-else>Importando…</span>
+                  <button @click="importFromFathom" :disabled="importingFathom || !canEditSelected"
+                    class="bg-sky-500 hover:bg-sky-600 text-white text-sm px-4 py-2 rounded shadow disabled:opacity-50">
+                    {{ importingFathom ? 'Importando…' : 'Importar' }}
                   </button>
                 </div>
               </div>
 
-
-              <div class="flex-1 mb-3">
+              <!-- Contenido de la nota -->
+              <div class="flex-1 mb-4">
+                <label class="block text-xs font-semibold text-gray-600 mb-2">CONTENIDO DE LA NOTA</label>
                 <textarea v-model="editableNote.content"
                   class="w-full h-full min-h-[200px] border border-gray-300 rounded px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                  placeholder="Escribe tu nota aquí...">
+                  placeholder="Escribe tu nota aquí..." :disabled="!canEditSelected">
                 </textarea>
               </div>
 
-              <div class="flex justify-between items-center mt-2">
-                <div class="flex gap-2">
-                  <button @click="saveNote"
-                    class="bgPrincipal text-white px-4 py-1.5 rounded text-sm shadow hover:opacity-90 transition">
-                    Guardar
-                  </button>
-                  <button @click="destroy(selectedNote.id)"
-                    class="bgIconTrash text-white px-3 py-1.5 rounded text-sm shadow hover:opacity-90 transition">
-                    Eliminar
-                  </button>
-                </div>
-                <span class="text-[11px] text-gray-400">
+              <!-- Botones de acción -->
+              <div class="flex justify-between items-center pt-3 border-t">
+                <button @click="saveNote" :disabled="!canEditSelected"
+                  class="bgPrincipal text-white px-6 py-2 rounded text-sm shadow hover:opacity-90 transition disabled:opacity-60">
+                  Guardar
+                </button>
+                <button @click="destroy(selectedNote.id)" :disabled="!isOwnerSelected"
+                  class="text-red-500 hover:text-red-700 p-2 disabled:opacity-40">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+
+              <!-- Última edición -->
+              <div class="mt-2 text-center">
+                <span class="text-xs text-gray-400">
                   Última edición: {{ selectedNote.updated_at || '—' }}
                 </span>
               </div>

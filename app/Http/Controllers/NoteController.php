@@ -219,66 +219,24 @@ TXT;
         }
     }
 
-    public function importFathom(Note $note, Request $request)
+    public function importFromFathom(Request $request)
     {
-        $user = $request->user();
-
-        if (!$note->canEdit($user)) {
-            abort(403);
-        }
-
-        $data = $request->validate([
-            'fathom_url' => ['required', 'url'],
+        $request->validate([
+            'url' => ['required', 'string', 'starts_with:https://fathom.video/share/'],
         ]);
 
-        $note->update([
-            'fathom_url' => $data['fathom_url'],
+        $response = Http::timeout(90)->post('http://127.0.0.1:3001/extract', [
+            'url' => $request->url
         ]);
 
-        $apiKey = env('OPENAI_API_KEY');
-        $model  = env('OPENAI_MODEL', 'deepseek/deepseek-chat-v3.1');
-
-        $prompt = <<<PROMPT
-    Tienes acceso al contenido de una página de Fathom que resume una reunión.
-
-    Tarea:
-    - Extrae únicamente la sección llamada "SUMMARY"
-    - Muestra todo el contenido de la sección "SUMMARY" sin modificar ni agregar información.
-    - Hazlo claro, profesional y bien estructurado
-    - No inventes información
-    - Muestra estrictamente la información de la sección llamada "SUMMARY" completa y tal como está.
-
-    Link de Fathom:
-    {$data['fathom_url']}
-
-    Devuelve SOLO el contenido del SUMMARY.
-    PROMPT;
-
-        $response = Http::withToken($apiKey)
-            ->post('https://openrouter.ai/api/v1/chat/completions', [
-                'model' => $model,
-                'messages' => [
-                    ['role' => 'system', 'content' => 'Eres un asistente experto en análisis de reuniones.'],
-                    ['role' => 'user', 'content' => $prompt],
-                ],
-            ]);
-
-        if (!$response->successful()) {
-            return back()->with('error', 'No se pudo importar el resumen de Fathom');
+        if (!$response->ok()) {
+            return response()->json([
+                'error' => $response->json('error') ?? 'Error al importar desde Fathom'
+            ], 500);
         }
 
-        $summary = $response->json('choices.0.message.content');
-
-        // Insertamos el summary dentro de la nota
-        $note->content = trim(
-            ($note->content ? $note->content . "\n\n" : '') .
-            "## 📝 Resumen de la reunión\n\n" .
-            $summary
-        );
-
-        $note->save();
-
-        return back()->with('success', 'Resumen de Fathom importado correctamente');
+        return response()->json([
+            'summary' => $response->json('summary')
+        ]);
     }
-
 }
